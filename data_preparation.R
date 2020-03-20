@@ -1,10 +1,11 @@
 
-validation = read.csv("/Users/mplome/Desktop/validation_offset.csv", 
-                     header = FALSE, sep=",", )
+validation = read.csv("/Users/mplome/dev/Stage_2_Submission/validation_offset.csv", 
+                     header = FALSE, sep="," )
 validation_data = validation[2:6]
 validation_id = validation[1]
 
-table = read.csv("/Users/mplome/Desktop/et_full_data_minus_pilot.csv", 
+
+table = read.csv("/Users/mplome/data/full_data_for_2_stage.csv", 
                      header = TRUE, sep=",")
 
 
@@ -37,8 +38,11 @@ more_than_one_bad = bad_per_row > 1
 more_than_two_bad = bad_per_row > 2
 #View(validation[more_than_two_bad,])
 
-bad_ids_with_test_prefix = validation_id[more_than_two_bad,]
+bad_ids_with_test_prefix = validation_id[more_than_one_bad,]
 bad_ids = sapply(bad_ids_with_test_prefix, function(x) substring(x, 2))
 
 index = !(table$sbj_id %in% bad_ids)
 final_table = table[index,]
+
+
+length(final_table)
