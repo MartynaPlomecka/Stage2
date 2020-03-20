@@ -1,5 +1,4 @@
 
-#od50 <- read.table("/Users/mplome/data/od50.csv", header = TRUE, sep=",")
 subjects <- read.table("/Users/mplome/dev/STAGE2/full_data_for_2_stage.csv", header = TRUE, sep=",")
 View(subjects)
 
@@ -17,64 +16,59 @@ testretest <- rep(test, 2)
 View(testretest)
 #dotad
 protocol <- c("p", "a", "a", "a", "p")
-tabela <- data.frame(id=testretest,test_nr= rep(1:2, each = length(test)), blok = 1:5, typ = protocol, error =0, correct = 0)
+tabela <- data.frame(sbj_id=testretest,test_num= rep(1:2, each = length(test)), blok = 1:5, typ = protocol, error =0, correct = 0)
 
 for (i in 1:nrow(subjects)) {
   row = subjects[i,]
-  index = tabela$id==row$sbj_id & tabela$blok == row$block_id & tabela$test_nr == row$test_num
+  index = tabela$sbj_id==row$sbj_id & tabela$blok == row$block_id & tabela$test_num == row$test_num
   tabela[index,'error'] = tabela[index,'error'] + !is_correct(row)
   tabela[index,'correct'] = tabela[index,'correct'] + is_correct(row)
   tabela[index,'age'] = row$age;
 }
-
+------------------------------
 #we calculate the mean of saccadic latency for each of subject
-for (id in unique(tabela$id)) {
+for (sbj_id in unique(tabela$sbj_id)) {
   for (b in 1:5) {
     for (tn in 1:2) {
-      ti = tabela$id==id & tabela$blok==b & tabela$test_nr==tn
-      si = subjects$sbj_id==id & subjects$block_id==b & subjects$test_num==tn
+      ti = tabela$sbj_id==sbj_id & tabela$blok==b & tabela$test_num==tn
+      si = subjects$sbj_id==sbj_id & subjects$block_id==b & subjects$test_num==tn
       tabela[ti,'rt'] = mean(subjects$sacc_time[si])
       #tabela[ti,'age'] = subjects$age[si][1]
     }
   }
 }
-
+---------------------------------------------------
 #now we calculate the mean gain for each of subject
-for (id in unique(tabela$id)) {
+for (sbj_id in unique(tabela$sbj_id)) {
   for (b in 1:5) {
     for (tn in 1:2) {
-      ti = tabela$id==id & tabela$blok==b & tabela$test_nr==tn
-      si = subjects$sbj_id==id & subjects$block_id==b & subjects$test_num==tn
+      ti = tabela$sbj_id==sbj_id & tabela$blok==b & tabela$test_num==tn
+      si = subjects$sbj_id==sbj_id & subjects$block_id==b & subjects$test_num==tn
       tabela[ti,'gain'] = mean(subjects$gain[si])
       #tabela[ti,'age'] = subjects$age[si][1]
     }
   }
 }
-
-#now we calculate the mean peak saccadic velo for each of subject
-for (id in unique(tabela$id)) {
+------------------------------------------------------------
+#now we calculate the mean peak saccadic velocity for each of subject
+for (sbj_id in unique(tabela$sbj_id)) {
   for (b in 1:5) {
     for (tn in 1:2) {
-      ti = tabela$id==id & tabela$blok==b & tabela$test_nr==tn
-      si = subjects$sbj_id==id & subjects$block_id==b & subjects$test_num==tn
+      ti = tabela$sbj_id==sbj_id & tabela$blok==b & tabela$test_num==tn
+      si = subjects$sbj_id==sbj_id & subjects$block_id==b & subjects$test_num==tn
       tabela[ti,'peak_velocity'] = mean(subjects$peak_velocity[si])
       #tabela[ti,'age'] = subjects$age[si][1]
     }
   }
 }
-#write.csv(tabela, file = '/Users/mplome/data/aggregated2018.csv', row.names=FALSE)
-write.csv(tabela, file = '/Users/mplome/data/et_full_data_agg.csv', row.names=FALSE)
+write.csv(tabela, file = '/Users/mplome/dev/STAGE2/full_data_agg.csv', row.names=FALSE)
 
-# ids <- read.table("/Users/mplome/data/ids2018.csv", header = TRUE, sep=",")
-# najlepsza <- tabela[tabela$id %in% ids$ids,]
 
 # library(dplyr)
 # koncowa <- najlepsza %>% 
 #   group_by(id) %>% 
 #   filter(all(error < 3*correct))
 
-#teraz mamy 
-write.csv(table, file = "/Users/mplome/dev/STAGE2/full_data_for_2_stage_agg.csv", row.names=FALSE)
 
 
 
