@@ -1,7 +1,7 @@
 
 #od50 <- read.table("/Users/mplome/data/od50.csv", header = TRUE, sep=",")
-subjects <- read.table("/Users/mplome/data/full_data_for_2_stage.csv", header = TRUE, sep=",")
-
+subjects <- read.table("/Users/mplome/dev/STAGE2/full_data_for_2_stage.csv", header = TRUE, sep=",")
+View(subjects)
 
 is_correct <- function(row) {
   (row$type == 1 && row$stim_dir == row$sacc_dir) ||
@@ -9,8 +9,13 @@ is_correct <- function(row) {
 }
 
 unique_ids <- unique(subjects$sbj_id)
+unique_ids
+
 test <- rep(unique_ids, each = 5)
+View(test)
 testretest <- rep(test, 2)
+View(testretest)
+#dotad
 protocol <- c("p", "a", "a", "a", "p")
 tabela <- data.frame(id=testretest,test_nr= rep(1:2, each = length(test)), blok = 1:5, typ = protocol, error =0, correct = 0)
 
@@ -60,17 +65,17 @@ for (id in unique(tabela$id)) {
 #write.csv(tabela, file = '/Users/mplome/data/aggregated2018.csv', row.names=FALSE)
 write.csv(tabela, file = '/Users/mplome/data/et_full_data_agg.csv', row.names=FALSE)
 
-ids <- read.table("/Users/mplome/data/ids2018.csv", header = TRUE, sep=",")
-najlepsza <- tabela[tabela$id %in% ids$ids,]
+# ids <- read.table("/Users/mplome/data/ids2018.csv", header = TRUE, sep=",")
+# najlepsza <- tabela[tabela$id %in% ids$ids,]
 
-library(dplyr)
-koncowa <- najlepsza %>% 
-  group_by(id) %>% 
-  filter(all(error < 3*correct))
+# library(dplyr)
+# koncowa <- najlepsza %>% 
+#   group_by(id) %>% 
+#   filter(all(error < 3*correct))
 
-#teraz mamy 21 starych i 21 mlodych
-write.csv(koncowa, file = '/Users/mplome/dev/Prosaccades-Antisaccades/Data/koncowa_full_data.csv', row.names=FALSE)
+#teraz mamy 
+write.csv(table, file = "/Users/mplome/dev/STAGE2/full_data_for_2_stage_agg.csv", row.names=FALSE)
 
-#tabela z 21młodymi i 21starymi, gdzie reaction time nie jest uśrednione do bloków
-#subjects2018_eq <- read.table("/Users/mplome/data/subjects2018_eq_100_800.csv", header = TRUE, sep=",")
+
+
 

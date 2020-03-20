@@ -1,7 +1,7 @@
 library(dplyr)
 library(readxl)
 
-table = read.csv("/Users/mplome/dev/STAGE2/full_data_for_2_stage.csv", 
+table = read.csv("/Users/mplome/dev/STAGE2/raw.csv", 
                      header = TRUE, sep=",")
 
 ids <- read_excel("/Users/mplome/dev/STAGE2/TRT_old.xlsx")
@@ -19,10 +19,9 @@ for (i in 1:nrow(table)) {
 }
 
 
-unique(table$age)
-unique(table$sbj_id)
 
-write.csv(table, file = "/Users/mplome/dev/STAGE2/full_data_for_2_stage.csv", row.names=FALSE)
+unique(table$sbj_id[table$age == 0]) #teraz mamy 91 mlodych
+unique(table$sbj_id[table$age == 1])  #101 starych, razem 192
 
 
 
@@ -48,38 +47,49 @@ bad_per_row = apply(validation_data_nonan, 1, function(x) sum(x > 1))
 more_than_two_bad = bad_per_row > 2
 #View(validation[more_than_two_bad,])
 
-View(validation[more_than_two_bad,])
+View(validation[more_than_two_bad,]) #these are removed
 bad_ids_with_test_prefix = validation_id[more_than_two_bad,]
 bad_ids = sapply(bad_ids_with_test_prefix, function(x) substring(x, 2))
 
-index = !(table$sbj_id %in% bad_ids)
+index = !(table$sbj_id %in% bad_ids) #here are good ones
 final_table = table[index,]
 
-
+unique(final_table$sbj_id[final_table$age ==1]) # po usunieciu non valid 92 starych
+unique(final_table$sbj_id[final_table$age ==0]) # po usunieciu non valid 83 mlodych
 
 length(final_table)
+################################################################
+#################################################################
+# #teraz wywalamy najpierw te co braly udzial w pilocie
+# rejected_ids = c(
+#   # Old
+#   "A0", "A4", "A9", "B0","C2","F3", "F4", 
+#   "F5", "F6", "F9","H0","H6", "L7", "M5",
+#   "N0", "N6", "N9", "U1","V1", "Y0",
+#   # Young
+#   "A2", "C0", "C1", "C7", "D1", "D3", "D5",
+#   "D6", "D8", "E1", "E6", "I1", "I5", "K4",
+#   "L4", "N1", "N3", "P0", "Q6", "Q9",
+#   # Bad
+#   "G0", "P8")
+# 
+# index = !(final_table$sbj_id %in% rejected_ids)
+# final_table = final_table[index,]
+# 
+# unique(final_table$sbj_id[final_table$age ==1]) # po usunieciu non valid 74 starych
+# unique(final_table$sbj_id[final_table$age ==0]) # po usunieciu non valid 62 mlodych
 
-#teraz wywalamy najpierw te co braly udzial w pilocie
+#################################################################
 rejected_ids = c(
-  # Old
-  "A0", "A4", "A9", "B0","C2","F3", "F4", 
-  "F5", "F6", "F9","H0","H6", "L7", "M5",
-  "N0", "N6", "N9", "U1","V1", "Y0",
-  # Young
-  "A2", "C0", "C1", "C7", "D1", "D3", "D5",
-  "D6", "D8", "E1", "E6", "I1", "I5", "K4",
-  "L4", "N1", "N3", "P0", "Q6", "Q9",
-  # Bad
-  "G0", "P8")
-
+  "G0", "P8") 
+#the task was not understood, more than 50%errors
 index = !(final_table$sbj_id %in% rejected_ids)
 final_table = final_table[index,]
 
-
-
+unique(final_table$sbj_id[final_table$age ==1]) # po usunieciu 92
+unique(final_table$sbj_id[final_table$age ==0]) # po usunieciu 82
+################################################################
 #reject all that took part in test only (without retest)
-
-#!(sbj_id has test_num==1 & sbj_id has test_num ==2) ->test_only
 
 test_only = group_by(final_table,sbj_id, add = FALSE) %>%
   summarise(how_many = n_distinct(test_num))
@@ -90,11 +100,24 @@ View(bad_ids_with_test_only)
 index = !(final_table$sbj_id %in% bad_ids_with_test_only)
 final_table = final_table[index,]
 
+unique(final_table$sbj_id[final_table$age ==0]) # po usunieciu 78
+unique(final_table$sbj_id[final_table$age ==1]) # po usunieciu 86
+
+#->final_table -> final version for stats
 
 write.csv(final_table, file = "/Users/mplome/dev/STAGE2/full_data_for_2_stage.csv", row.names=FALSE)
 
 
-unique(final_table$sbj_id)
+
+
+
+
+
+
+
+
+
+
 
 #only for me
 #final = 
