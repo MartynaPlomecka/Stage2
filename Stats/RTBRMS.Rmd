@@ -1,0 +1,386 @@
+---
+title: "BRMS REACTION TIME"
+author: "Martynka"
+date: "04.19"
+output: pdf_document
+---
+1-prosakada
+0- antysakada
+Load required packages:
+```{r, cache=FALSE}
+library(brms)
+```
+
+Load the data:
+```{r}
+koncowa <- read.table("/Users/mplome/data/od50agg.csv",
+                      header = TRUE, sep=",")
+koncowa$id <- factor(koncowa$id)
+koncowa$typ <- factor(koncowa$typ)
+koncowa$age <- factor(koncowa$age)
+koncowa$test_nr <- factor(koncowa$test_nr)
+stary = koncowa[koncowa$age == 1, ]
+stary
+wektor = stary$rt
+mean(wektor)
+sd(wektor)
+var(wektor)
+
+mlody = koncowa[koncowa$age == 0, ]
+mlody
+wektor1 = mlody$rt
+mean(wektor1)
+sd(wektor1)
+var(wektor1)
+```
+Model1:
+```{r}
+# 
+# lmreaction <- brm(sacc_time ~ 1 + type + age + (1|sbj_id),  data = koncowa)
+# brms::marginal_effects(lmreaction)
+# plot(lmreaction)
+# summary(lmreaction)
+# brms::pp_check(lmreaction)
+
+#best
+lmreactioninter <- brm(rt~ 1 + typ*age + (1|id), 
+                       data = koncowa)
+
+#lmreactioninter1 <- lm(sacc_time ~ 1 + type*age, 
+#                       data = koncowa)
+
+#brms::marginal_effects(lmreaction)
+#plot(lmreaction)
+#summary(lmreaction)
+
+brms::marginal_effects(lmreactioninter)
+plot(lmreactioninter)
+summary(lmreactioninter)
+brms::pp_check(lmreactioninter)
+```
+
+Model2:(we don't use it)
+```{r}
+#lmreaction_withoutage <- brm(sacc_time ~ 1 + type + (1|sbj_id),
+ #                            data = koncowa)
+#brms::marginal_effects(lmreaction_withoutage)
+#plot(lmreaction_withoutage)
+#summary(lmreaction_withoutage)
+
+```
+
+Compute model weights:
+```{r}
+#model_weights(lmreaction,lmreactioninter, 
+#              lmreaction_withoutage,weights = "loo")
+#WAIC(lmreaction,lmreactioninter, lmreaction_withoutage)
+```
+
+```{r}
+fitted_values_lmreactioninter <- fitted(lmreactioninter)
+library(logspline)
+library(fitdistrplus)
+
+myvector = as.vector(unique(fitted_values_lmreactioninter[,1]))
+descdist(myvector, discrete = FALSE)
+myvector1 = (myvector- min(myvector)+1)/(max(myvector - min(myvector))+2)
+fit.beta = fitdist(myvector1, "beta")
+plot(fit.beta)
+```
+```{r}
+#Y- probability that we want to model for each person
+dat_fitted_values_lmreactioninter <-
+  as.data.frame(cbind(Y = standata(lmreactioninter)$Y, fitted_values_lmreactioninter))
+
+plot <-
+  ggplot(dat_fitted_values_lmreactioninter) + geom_point(aes(x = Estimate, y = Y))
+plot
+```
+
+```{r}
+#1 to prosakada
+pplmreactioninter = brms::pp_check(lmreactioninter,nsamples = 10)
+
+marginaleffects_lmreactioninter <- 
+  brms::marginal_effects(lmreactioninter, points = TRUE)
+marginaleffects_lmreactioninter
+#dla antysakad
+newdata_lmreactioninter = 
+  data.frame(age = levels(koncowa$age), typ = "p")
+#prosakada
+fit_lmreactioninter = fitted(
+ lmreactioninter,
+   newdata = newdata_lmreactioninter,
+   re_formula = NA,
+ summary = TRUE)
+
+datadoplotapro= koncowa[koncowa$typ =="p", ]
+
+df_plot = cbind(newdata_lmreactioninter, fit_lmreactioninter)
+
+b = ggplot(df_plot, aes(x = age, y = Estimate)) +
+  geom_violin(data=datadoplotapro, aes(x=age, y=rt), alpha=0.4, color="coral3", fill='coral1', width = 0.25) +
+  geom_jitter(data=datadoplotapro, aes(x=age, y=rt), color="coral3", alpha=0.4, size=0.7, position = position_jitter(width = 0.45)) +
+  geom_errorbar(aes(ymin=Q2.5, ymax=Q97.5), position=position_dodge(), size=0.6, width=.4) +
+  geom_point(shape=21, size=4, fill='grey77') +
+  #geom_hline(yintercept=50, linetype=2) +
+  xlab("") +
+  ylab('prosaccades, ms') +
+  ylim(150,500) +
+  scale_x_discrete(breaks=c("0","1"),
+                   labels=c("young","old") ) +  ggtitle("")+
+    #theme_bw () +
+  theme(panel.grid = element_blank()) + 
+  theme(axis.text=element_text(size=19),
+        axis.title=element_text(size=19,face="bold")) +
+  theme(axis.text.x = element_text(size=19, face="bold")) +
+theme(plot.title = element_text(color="grey19", size=21, face="bold"))
+
+  theme(panel.grid = element_blank())
+```
+
+```{r}
+#dla antysakad
+#to trzeba aprawdzic
+
+datadoplota = koncowa[koncowa$typ =="a", ]
+                        
+newdata_lmreactioninteranti = 
+  data.frame(age = levels(koncowa$age), typ = "a")
+
+fit_lmreactioninteranti = fitted(
+ lmreactioninter,
+   newdata = newdata_lmreactioninteranti,
+   re_formula = NA,
+ summary = TRUE)
+
+df_plotanti = cbind(newdata_lmreactioninteranti, fit_lmreactioninteranti)
+
+a= ggplot(df_plotanti, aes(x = age, y = Estimate)) +
+  geom_violin(data=datadoplota, aes(x=age, y=rt), alpha=0.4, color="lightblue3", fill='lightblue1', width = 0.25) +
+  geom_jitter(data=datadoplota, aes(x=age, y=rt), color="lightblue3", alpha=0.4, size=0.7, position = position_jitter(width = 0.45)) +
+  geom_errorbar(aes(ymin=Q2.5, ymax=Q97.5), position=position_dodge(), size=0.6, width=.4) +
+  geom_point(shape=21, size=4, fill='grey77') +
+  #geom_hline(yintercept=50, linetype=2) +
+  xlab("") +
+  ylab('antisaccades, ms') +
+  ylim(150,500) +
+  scale_x_discrete(breaks=c("0","1"),
+                   labels=c("young","old") ) + ggtitle("")+
+    #theme_bw () +
+#theme_bw () +
+  theme(panel.grid = element_blank()) + 
+  theme(axis.text=element_text(size=19),
+        axis.title=element_text(size=19,face="bold")) +
+  theme(axis.text.x = element_text(size=19, face="bold")) +
+theme(plot.title = element_text(color="grey19", size=21, face="bold"))
+
+  theme(panel.grid = element_blank())
+
+library(gridGraphics)
+library(gridBase)
+library(gridExtra)
+
+grid.arrange(a, b, nrow = 1)
+
+```
+
+CONTRASTS ON AGE for prosac (tpe 1)
+```{r}
+
+fit = as.data.frame(fitted(lmreactioninter, newdata = newdata_lmreactioninter, re_formula = NA, summary = FALSE))
+colnames(fit) = newdata_lmreactioninter$age
+head(fit)
+#this is basically the MCMC chain but converted from regression coefficients for fitted values for each age. 
+
+old_vs_young = fit[,"1"] - fit[,"0"] 
+young_vs_old = fit[,"0"] - fit[,"1"] 
+#we can obtain a posterior distribution of this contrast and summarized it:
+hist(old_vs_young)
+plot(density(old_vs_young))
+quantile(old_vs_young, probs = c(.5, .025, .975)) 
+
+
+mean(old_vs_young>0)
+
+hist(young_vs_old)
+plot(density(young_vs_old))
+quantile(young_vs_old, probs = c(.5, .025, .975)) 
+
+young_vs_old = 1 - old_vs_young
+hist(young_vs_old)
+plot(density(young_vs_old))
+quantile(young_vs_old, probs = c(.5, .025, .975)) 
+```
+
+CONTRASTS ON AGE for anti
+```{r}
+fitanti = as.data.frame(fitted(lmreactioninter, newdata = newdata_lmreactioninteranti, re_formula = NA, summary = FALSE))
+colnames(fitanti) = newdata_lmreactioninteranti$age
+head(fitanti)
+#this is basically the MCMC chain but converted from regression coefficients for fitted values for each age. 
+
+old_vs_young = fitanti[,"1"] - fitanti[,"0"] 
+young_vs_old = fitanti[,"0"] - fitanti[,"1"] 
+#we can obtain a posterior distribution of this contrast and summarized it:
+hist(old_vs_young)
+plot(density(old_vs_young))
+quantile(old_vs_young, probs = c(.5, .025, .975)) 
+
+
+mean(old_vs_young>0)
+
+hist(young_vs_old)
+plot(density(young_vs_old))
+quantile(young_vs_old, probs = c(.5, .025, .975)) 
+
+young_vs_old = 1 - old_vs_young
+hist(young_vs_old)
+plot(density(young_vs_old))
+quantile(young_vs_old, probs = c(.5, .025, .975)) 
+```
+
+
+contrast on type:
+```{r}
+
+newdata_lmreactionintertype = 
+  data.frame(type = levels(koncowa$type), age = 1)
+
+fit_lmreactioninter = fitted(
+ lmreactioninter,
+   newdata = newdata_lmreactionintertype,
+   re_formula = NA,
+ summary = TRUE)
+
+fit_lmreactioninter = as.data.frame(fitted(lmreactioninter, newdata = newdata_lmreactionintertype, re_formula = NA, summary = FALSE))
+colnames(fit_lmreactioninter) = newdata_lmreactionintertype$type
+head(fit_lmreactioninter)
+#this is basically the MCMC chain but converted from regression coefficients for fitted values for each age. 
+#for old, differences in the reaction time between old and young people
+anti_vs_pro = fit_lmreactioninter[,"0"] - fit_lmreactioninter[,"1"] 
+
+#we can obtain a posterior distribution of this contrast and summarized it:
+hist(anti_vs_pro)
+plot(density(anti_vs_pro))
+quantile(anti_vs_pro, probs = c(.5, .025, .975)) 
+
+pro_vs_anti = 1 - anti_vs_pro
+hist(pro_vs_anti)
+plot(density(pro_vs_anti))
+quantile(pro_vs_anti, probs = c(.5, .025, .975)) 
+```
+
+
+```{r}
+newdata_lmreactionintertype_yng = 
+  data.frame(type = levels(koncowa$type), age = 0)
+
+fit_lmreactioninter_yng = fitted(
+ lmreactioninter,
+   newdata = newdata_lmreactionintertype_yng,
+   re_formula = NA,
+ summary = TRUE)
+
+fit_lmreactioninter_yng = as.data.frame(fitted(lmreactioninter, newdata = newdata_lmreactionintertype_yng, re_formula = NA, summary = FALSE))
+colnames(fit_lmreactioninter_yng) = newdata_lmreactionintertype_yng$type
+head(fit_lmreactioninter_yng)
+#this is basically the MCMC chain but converted from regression coefficients for fitted values for each age. 
+#for old, differences in the reaction time between old and young people
+anti_vs_pro = fit_lmreactioninter_yng[,"0"] - fit_lmreactioninter_yng[,"1"] 
+
+#we can obtain a posterior distribution of this contrast and summarized it:
+hist(anti_vs_pro)
+plot(density(anti_vs_pro))
+quantile(anti_vs_pro, probs = c(.5, .025, .975)) 
+
+pro_vs_anti = 1 - anti_vs_pro
+hist(pro_vs_anti)
+plot(density(pro_vs_anti))
+quantile(pro_vs_anti, probs = c(.5, .025, .975)) 
+```
+Let's try for elderly participants, i.e. age ==1
+```{r}
+#OLD
+newdata_lmreactioninter_old = 
+  data.frame(type = levels(koncowa$type), age = 1)
+
+fit_lmreactioninter_old = fitted(
+ lmreactioninter,
+   newdata = newdata_lmreactioninter_old,
+   re_formula = NA,
+ summary = TRUE)
+
+koncowa_for_old = koncowa[koncowa$age == 1,]
+
+df_plot = cbind(newdata_lmreactioninter_old, fit_lmreactioninter_old)
+
+old =  ggplot(df_plot, aes(x = type, y = Estimate)) +
+  geom_violin(data=koncowa_for_old, aes(x=type, y=sacc_time), alpha=0.4, color="darkseagreen4", fill='darkseagreen1', width = 0.25) +
+  geom_jitter(data=koncowa_for_old, aes(x=type, y=sacc_time), color="darkseagreen", alpha=0.21, size=0.1, position = position_jitter(width = 0.45)) +
+  geom_errorbar(aes(ymin=Q2.5, ymax=Q97.5), position=position_dodge(), size=0.7, width=.4) +
+  geom_point(shape=21, size=4, fill='grey77') +
+  #geom_hline(yintercept=50, linetype=2) +
+  xlab("") +
+  ylab('old people, ms') +
+  ylim(0,700) +
+  scale_x_discrete(breaks=c("0","1"),
+                   labels=c("antisaccades","prosaccades") ) + ggtitle("B")+
+    #theme_bw () +
+#theme_bw () +
+  theme(panel.grid = element_blank()) + 
+  theme(axis.text=element_text(size=19),
+        axis.title=element_text(size=19,face="bold")) +
+  theme(axis.text.x = element_text(size=19, face="bold")) +
+theme(plot.title = element_text(color="grey19", size=21, face="bold"))
+
+  theme(panel.grid = element_blank())
+  
+```
+
+```{r}
+#YOUNG
+newdata_lmreactioninter_young = 
+  data.frame(type = levels(koncowa$type), age = 0)
+
+fit_lmreactioninter_young = fitted(
+ lmreactioninter,
+   newdata = newdata_lmreactioninter_young,
+   re_formula = NA,
+ summary = TRUE)
+
+koncowa_for_young = koncowa[koncowa$age == 0,]
+
+df_plot = cbind(newdata_lmreactioninter_young, fit_lmreactioninter_young)
+
+young =  ggplot(df_plot, aes(x = type, y = Estimate)) +
+  geom_violin(data=koncowa_for_young, aes(x=type, y=sacc_time), alpha=0.4, color="steelblue3", fill='steelblue1', width = 0.25) +
+  geom_jitter(data=koncowa_for_young, aes(x=type, y=sacc_time), color="steelblue1", alpha=0.21, size=0.1, position = position_jitter(width = 0.45)) +
+  geom_errorbar(aes(ymin=Q2.5, ymax=Q97.5), position=position_dodge(), size=0.7, width=.4) +
+  geom_point(shape=21, size=4, fill='grey77') +
+  #geom_hline(yintercept=50, linetype=2) +
+  xlab("") +
+  ylab('young people, ms') +
+  ylim(0,700) +
+  scale_x_discrete(breaks=c("0","1"),
+                   labels=c("antisaccades","prosaccades") )  + ggtitle("A")+
+    #theme_bw () +
+#theme_bw () +
+  theme(panel.grid = element_blank()) + 
+  theme(axis.text=element_text(size=19),
+        axis.title=element_text(size=19,face="bold")) +
+  theme(axis.text.x = element_text(size=19, face="bold")) +
+theme(plot.title = element_text(color="grey19", size=21, face="bold"))
+
+  theme(panel.grid = element_blank())
+```
+
+```{r}  
+
+library(grid)
+#my2 = grid.arrange(young, old, a, b, nrow = 2, top=textGrob("Reaction time", gp=gpar(fontsize=28,fontface = "bold")))
+
+
+my2 = grid.arrange( a, b, nrow = 1, top=textGrob("Reaction time", gp=gpar(fontsize=28,fontface = "bold")))
+
+```

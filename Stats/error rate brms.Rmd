@@ -1,0 +1,337 @@
+---
+title: "BRMS error rate"
+author: "Martynka"
+date: "04.25"
+output: pdf_document
+---
+TEGO UZYWAJ
+!!!!!!
+Tutaj jest najaktualniejszy skrypt, uzyty do postera
+
+Load required packages:
+```{r, cache=FALSE}
+library(brms)
+theme_set(theme_default())
+```
+
+Load the data:
+```{r}
+library(brms)
+library(ggplot2)
+```
+
+Load the data
+```{r}
+
+koncowa = read.csv("/Users/mplome/data/et_full_data.csv", 
+                     header = TRUE, sep=",")
+
+
+koncowa$id <- factor(koncowa$sbj_id)
+koncowa$type <- factor(koncowa$type)
+koncowa$age <- factor(koncowa$age)
+
+koncowa$correct = (koncowa$type == 1 & koncowa$sacc_dir == koncowa$stim_dir) |
+  (koncowa$type == 0 & koncowa$sacc_dir != koncowa$stim_dir)
+
+koncowa$sbj_id <- factor(koncowa$sbj_id)
+koncowa$type <- factor(koncowa$type)
+koncowa$age <- factor(koncowa$age)
+koncowa$test_num <- factor(koncowa$test_num)
+```
+
+```{r}
+aggregate(correct ~ age + type + sbj_id, koncowa, mean)
+obs = aggregate(correct ~ age + type + sbj_id, koncowa, mean) 
+obs$correct = obs$correct * 100 # convert to %
+plot(obs$age, obs$correct)
+#plot(aggregate(correct ~ age, koncowa, mean))
+```
+
+Model
+```{r}
+
+correctness <- brm(correct ~ 1 + type + age + (1|sbj_id), 
+                  data = koncowa, family = "bernoulli")
+
+brms::marginal_effects(correctness)
+plot(correctness)
+summary(correctness)
+fitted_values_correctness <- fitted(correctness)
+library(logspline)
+library(fitdistrplus)
+#run to 100 razy i potem 
+myvector = as.vector(unique(fitted_values_correctness[,1]))
+myvectorshort = sort(myvector)[-c(1:7)]
+descdist(myvectorshort, discrete = FALSE)
+fit.beta = fitdist(myvectorshort, "beta")
+plot(fit.beta)
+descdist(myvector, discrete = FALSE)
+fit.beta = fitdist(myvector, "beta")
+plot(fit.beta)
+
+```
+
+
+```{r}
+fitted_values_correctness <- fitted(correctness)
+```
+
+
+```{r}
+#ppcorrectness = brms::pp_check(correctness,nsamples = 100)
+
+#marginaleffects_correctness <- 
+  #brms::marginal_effects(correctness, points = TRUE)
+#marginaleffects_correctness
+
+newdata_correctness = 
+  data.frame(age = levels(koncowa$age), type = 1)
+newdata_correctness
+#pro
+
+#newdata_correctness = expand.grid(age = levels(koncowa$age), type = levels(koncowa$type))
+
+fit_correctness = fitted(
+ correctness,
+   newdata = newdata_correctness,
+   re_formula = NA,
+ summary = TRUE) * 100
+
+
+df_plot = cbind(newdata_correctness, fit_correctness)
+obs_pro = obs[obs$type == 1,]
+#pro
+p4 = ggplot(df_plot, aes(x = age, y = Estimate)) +
+  geom_violin(data=obs_pro, aes(x=age, y=correct), alpha=0.4, color="coral3", fill='coral1', width = 0.25) +
+  geom_jitter(data=obs_pro, aes(x=age, y=correct), color="coral2", alpha=0.56, size=1.4, position = position_jitter(width = 0.45)) +
+  geom_errorbar(aes(ymin=Q2.5, ymax=Q97.5), position=position_dodge(), size=0.8, width=.4) +
+  geom_point(shape=21, size=4, fill='grey77') +
+  #geom_hline(yintercept=50, linetype=2) +
+  xlab("") +
+  ylab(' prosaccadess, %') +
+  ylim(75,100)  +
+   scale_x_discrete(breaks=c("0","1"),
+                   labels=c("old","young") ) + ggtitle("") +
+    #theme_bw () +
+  theme(panel.grid = element_blank()) + 
+  theme(axis.text=element_text(size=19),
+        axis.title=element_text(size=19,face="bold")) +
+  theme(axis.text.x = element_text(size=19, face="bold"))  +
+theme(plot.title = element_text(color="grey19", size=21, face="bold")) +
+
+  theme(panel.grid = element_blank())
+```
+
+```{r}
+
+newdata_correctnessanti = 
+  data.frame(age = levels(koncowa$age), type = 0)
+
+#newdata_correctness = expand.grid(age = levels(koncowa$age), type = levels(koncowa$type))
+
+fit_correctnessanti = fitted(
+ correctness,
+   newdata = newdata_correctnessanti,
+   re_formula = NA,
+ summary = TRUE) * 100
+
+
+
+obs_anti = obs[obs$type == 0,]
+df_plotanti = cbind(newdata_correctnessanti, fit_correctnessanti)
+
+
+p3=ggplot(df_plotanti, aes(x = age, y = Estimate)) +
+  geom_violin(data=obs_anti[obs_anti$sbj_id!='G0',], aes(x=age, y=correct), alpha=0.4, color="lightblue3", fill='lightblue', width = 0.25) +
+  geom_jitter(data=obs_anti[obs_anti$sbj_id!='G0',], aes(x=age, y=correct), color="lightblue2", alpha=0.56, size = 1.4, position = position_jitter(width = 0.45)) +
+  geom_errorbar(aes(ymin=Q2.5, ymax=Q97.5), position=position_dodge(), size=0.8, width=.4) +
+  geom_point(shape=21, size=4, fill='grey77') +
+  #geom_hline(yintercept=50, linetype=2) +
+  xlab("") +
+  ylab('antisaccadess, %') +
+  ylim(75,100)  +
+   scale_x_discrete(breaks=c("0","1"),
+                   labels=c("old","young") ) + ggtitle("") +
+    #theme_bw () +
+  theme(panel.grid = element_blank()) + 
+  theme(axis.text=element_text(size=19),
+        axis.title=element_text(size=19,face="bold")) +
+  theme(axis.text.x = element_text(size=19, face="bold")) +
+  theme(plot.title = element_text(color="grey19", size=21, face="bold"))
+
+```
+
+CONTRASTS ON AGE for antisaccades
+```{r}
+
+fit_correctnessanti = as.data.frame(fitted(correctness, newdata = newdata_correctnessanti, re_formula = NA, summary = FALSE))
+colnames(fit_correctnessanti) = newdata_correctnessanti$age
+head(fit_correctnessanti)
+#this is basically the MCMC chain but converted from regression coefficients for fitted values for each age. 
+
+old_vs_young = fit_correctnessanti[,"1"] - fit_correctnessanti[,"0"] 
+mean(old_vs_young>0)
+
+#we can obtain a posterior distribution of this contrast and summarized it:
+hist(old_vs_young)
+plot(density(old_vs_young))
+quantile(old_vs_young, probs = c(.5, .025, .975)) 
+mean(old_vs_young<0)
+
+young_vs_old = fit_correctnessanti[,"0"] - fit_correctnessanti[,"1"]
+hist(young_vs_old)
+mean(young_vs_old>0)
+quantile(young_vs_old, probs = c(.5, .025, .975))
+```
+CONTRASTS ON AGE for prosaccades
+```{r}
+
+fit_correctness = as.data.frame(fitted(correctness, newdata = newdata_correctness, re_formula = NA, summary = FALSE))
+colnames(fit_correctness) = newdata_correctness$age
+head(fit_correctness)
+#this is basically the MCMC chain but converted from regression coefficients for fitted values for each age. 
+
+old_vs_young = fit_correctness[,"1"] - fit_correctness[,"0"] 
+mean(old_vs_young>0)
+
+#we can obtain a posterior distribution of this contrast and summarized it:
+hist(old_vs_young)
+plot(density(old_vs_young))
+quantile(old_vs_young, probs = c(.5, .025, .975)) 
+mean(old_vs_young<0)
+
+young_vs_old = fit_correctness[,"0"] - fit_correctness[,"1"]
+hist(young_vs_old)
+mean(young_vs_old>0)
+quantile(young_vs_old, probs = c(.5, .025, .975))
+```
+tuttaj moje proby tylko ze starymi, tak zeby sie skoncentrowac na tym czy w danych grupach wiekowych dalej sa róznice, czy juz nie ma 
+```{r}
+#OLD
+newdata_for_old = 
+  data.frame(type = levels(koncowa$type), age = 1)
+
+fit_old = fitted(
+ correctness,
+   newdata = newdata_for_old,
+   re_formula = NA,
+ summary = TRUE) * 100
+
+df_plot_prosaccades_for_old = cbind(newdata_for_old, fit_old)
+obs_pro_prosaccades_for_old = obs[obs$age == 1,]
+
+p2 = ggplot(df_plot_prosaccades_for_old, aes(x = type, y = Estimate)) +
+  geom_violin(data=obs_pro_prosaccades_for_old, aes(x=type, y=correct), alpha=0.4, color="darkseagreen4", fill="darkseagreen1", width = 0.25) +
+  geom_jitter(data=obs_pro_prosaccades_for_old, aes(x=type, y=correct), color="darkseagreen4", alpha=0.56, size=1.4, position = position_jitter(width = 0.45)) +
+  geom_errorbar(aes(ymin=Q2.5, ymax=Q97.5), position=position_dodge(), size=0.8, width=.4) +
+  geom_point(shape=21, size=4, fill="grey77") +
+  #geom_hline(yintercept=50, linetype=2) +
+  xlab("") +
+  ylab('old people, %') +
+  ylim(75,100)  +
+   scale_x_discrete(breaks=c("0","1"),
+                   labels=c("antisaccades","prosaccades") )  + ggtitle("B")+
+    #theme_bw () +
+  theme(panel.grid = element_blank()) + 
+  theme(axis.text=element_text(size=19),
+        axis.title=element_text(size=19,face="bold")) +
+  theme(axis.text.x = element_text(size=19, face="bold")) +
+  theme(plot.title = element_text(color="grey19", size=21, face="bold"))
+
+
+  theme(panel.grid = element_blank())
+  
+  #kontrast dla starych miedzy pro i anty
+fit_old = as.data.frame(fitted(correctness, newdata =newdata_for_old, re_formula = NA, summary = FALSE))
+colnames(fit_old) = newdata_for_old$type
+head(fit_old)
+#this is basically the MCMC chain but converted from regression coefficients for fitted values for each age. 
+
+pro_vs_anti = fit_old[,"1"] - fit_old[,"0"] 
+mean(pro_vs_anti>0)
+
+#we can obtain a posterior distribution of this contrast and summarized it:
+hist(pro_vs_anti)
+plot(density(pro_vs_anti))
+quantile(pro_vs_anti, probs = c(.5, .025, .975)) 
+mean(pro_vs_anti<0)
+
+anti_vs_pro= fit_old[,"0"] - fit_old[,"1"]
+hist(anti_vs_pro)
+mean(anti_vs_pro>0)
+quantile(anti_vs_pro, probs = c(.5, .025, .975))
+
+```
+
+```{r}
+#YOUNG
+newdata_fit_young = 
+  data.frame(type = levels(koncowa$type), age = 0)
+
+fit_young = fitted(
+ correctness,
+   newdata = newdata_fit_young,
+   re_formula = NA,
+ summary = TRUE) * 100
+
+df_plot_prosaccades_for_young = cbind(newdata_fit_young, fit_young)
+obs_pro_prosaccades_for_young = obs[obs$age == 0,]
+
+p1 = ggplot(df_plot_prosaccades_for_young, aes(x = type, y = Estimate)) +
+  geom_violin(data=obs_pro_prosaccades_for_young, aes(x=type, y=correct), alpha=0.4, color="steelblue3", fill='steelblue1', width = 0.25) +
+  geom_jitter(data=obs_pro_prosaccades_for_young, aes(x=type, y=correct), color="steelblue2", alpha=0.56, size= 1.4, position = position_jitter(width = 0.45)) +
+ geom_errorbar(aes(ymin=Q2.5, ymax=Q97.5), position=position_dodge(), size=0.8, width=.4) +
+  geom_point(shape=21, size=4, fill='grey77') +
+  #geom_hline(yintercept=50, linetype=2) +
+  xlab("") +
+  ylab('young people. %') +
+  ylim(75,100) +
+   scale_x_discrete(breaks=c("0","1"),
+                   labels=c("antisaccades","prosaccades") ) + ggtitle("A")+
+    #theme_bw () +
+  theme(panel.grid = element_blank()) + 
+  theme(axis.text=element_text(size=19),
+        axis.title=element_text(size=19,face="bold")) +
+  theme(axis.text.x = element_text(size=19, face="bold")) +
+  theme(panel.grid = element_blank()) +
+theme(plot.title = element_text(color="grey19", size=21, face="bold"))
+
+
+  #kontrast dla starych miedzy pro i anty
+fit_young = as.data.frame(fitted(correctness, newdata =newdata_fit_young, re_formula = NA, summary = FALSE))
+colnames(fit_young) = newdata_fit_young$type
+head(fit_young)
+#this is basically the MCMC chain but converted from regression coefficients for fitted values for each age. 
+
+pro_vs_anti = fit_young[,"1"] - fit_young[,"0"] 
+mean(pro_vs_anti>0)
+
+#we can obtain a posterior distribution of this contrast and summarized it:
+hist(pro_vs_anti)
+plot(density(pro_vs_anti))
+quantile(pro_vs_anti, probs = c(.5, .025, .975)) 
+mean(pro_vs_anti<0)
+
+#anti_vs_pro= fit_old[,"0"] - fit_old[,"1"]
+#hist(anti_vs_pro)
+#mean(anti_vs_pro>0)
+#quantile(anti_vs_pro, probs = c(.5, .025, .975))
+
+
+
+
+```
+
+```{r}
+library(grid)
+library(gridExtra)
+library(gridBase)
+#my = grid.arrange(p1, p2,p3, p4, nrow = 2, top=textGrob("Correctness of performance", #gp=gpar(fontsize=28,fontface = "bold")))
+
+
+my = grid.arrange(p3, p4, nrow = 1, top=textGrob("Correctness of performance", gp=gpar(fontsize=28,fontface = "bold")))
+
+#grid.arrange(p1, p2, nrow = 1)
+#grid.arrange(p3, p4, nrow = 1)
+```
