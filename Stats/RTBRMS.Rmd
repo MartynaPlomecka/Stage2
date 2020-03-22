@@ -9,16 +9,17 @@ output: pdf_document
 Load required packages:
 ```{r, cache=FALSE}
 library(brms)
+library(ggplot2)
 ```
 
 Load the data:
 ```{r}
-koncowa <- read.table("/Users/mplome/data/od50agg.csv",
+koncowa <- read.table("/Users/mplome/dev/STAGE2/full_data_agg.csv",
                       header = TRUE, sep=",")
-koncowa$id <- factor(koncowa$id)
+koncowa$id <- factor(koncowa$sbj_id)
 koncowa$typ <- factor(koncowa$typ)
 koncowa$age <- factor(koncowa$age)
-koncowa$test_nr <- factor(koncowa$test_nr)
+koncowa$test_num <- factor(koncowa$test_num)
 stary = koncowa[koncowa$age == 1, ]
 stary
 wektor = stary$rt
@@ -43,7 +44,7 @@ Model1:
 # brms::pp_check(lmreaction)
 
 #best
-lmreactioninter <- brm(rt~ 1 + typ*age + (1|id), 
+lmreactioninter <- brm(rt~ 1 + typ*age + (1|sbj_id), 
                        data = koncowa)
 
 #lmreactioninter1 <- lm(sacc_time ~ 1 + type*age, 
@@ -245,7 +246,7 @@ contrast on type:
 ```{r}
 
 newdata_lmreactionintertype = 
-  data.frame(type = levels(koncowa$type), age = 1)
+  data.frame(typ = levels(koncowa$typ), age = 1)
 
 fit_lmreactioninter = fitted(
  lmreactioninter,
@@ -258,7 +259,7 @@ colnames(fit_lmreactioninter) = newdata_lmreactionintertype$type
 head(fit_lmreactioninter)
 #this is basically the MCMC chain but converted from regression coefficients for fitted values for each age. 
 #for old, differences in the reaction time between old and young people
-anti_vs_pro = fit_lmreactioninter[,"0"] - fit_lmreactioninter[,"1"] 
+anti_vs_pro = fit_lmreactioninter[,1] - fit_lmreactioninter[,2] #trzeba sprawdzuc ktore to pro a ktore anti
 
 #we can obtain a posterior distribution of this contrast and summarized it:
 hist(anti_vs_pro)
@@ -274,7 +275,7 @@ quantile(pro_vs_anti, probs = c(.5, .025, .975))
 
 ```{r}
 newdata_lmreactionintertype_yng = 
-  data.frame(type = levels(koncowa$type), age = 0)
+  data.frame(typ = levels(koncowa$typ), age = 0)
 
 fit_lmreactioninter_yng = fitted(
  lmreactioninter,
@@ -287,7 +288,7 @@ colnames(fit_lmreactioninter_yng) = newdata_lmreactionintertype_yng$type
 head(fit_lmreactioninter_yng)
 #this is basically the MCMC chain but converted from regression coefficients for fitted values for each age. 
 #for old, differences in the reaction time between old and young people
-anti_vs_pro = fit_lmreactioninter_yng[,"0"] - fit_lmreactioninter_yng[,"1"] 
+anti_vs_pro = fit_lmreactioninter_yng[,1] - fit_lmreactioninter_yng[,2] 
 
 #we can obtain a posterior distribution of this contrast and summarized it:
 hist(anti_vs_pro)
@@ -303,7 +304,7 @@ Let's try for elderly participants, i.e. age ==1
 ```{r}
 #OLD
 newdata_lmreactioninter_old = 
-  data.frame(type = levels(koncowa$type), age = 1)
+  data.frame(typ = levels(koncowa$typ), age = 1)
 
 fit_lmreactioninter_old = fitted(
  lmreactioninter,
@@ -341,7 +342,7 @@ theme(plot.title = element_text(color="grey19", size=21, face="bold"))
 ```{r}
 #YOUNG
 newdata_lmreactioninter_young = 
-  data.frame(type = levels(koncowa$type), age = 0)
+  data.frame(typ = levels(koncowa$typ), age = 0)
 
 fit_lmreactioninter_young = fitted(
  lmreactioninter,
