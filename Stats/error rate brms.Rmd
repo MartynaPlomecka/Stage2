@@ -8,6 +8,8 @@ TEGO UZYWAJ
 !!!!!!
 Tutaj jest najaktualniejszy skrypt, uzyty do postera
 
+nd 22.03 - updated
+
 Load required packages:
 ```{r, cache=FALSE}
 library(brms)
@@ -23,7 +25,7 @@ library(ggplot2)
 Load the data
 ```{r}
 
-koncowa = read.csv("/Users/mplome/data/et_full_data.csv", 
+koncowa = read.csv("/Users/mplome/dev/STAGE2/full_data_for_2_stage.csv", 
                      header = TRUE, sep=",")
 
 
@@ -86,11 +88,11 @@ fitted_values_correctness <- fitted(correctness)
 #marginaleffects_correctness
 
 newdata_correctness = 
-  data.frame(age = levels(koncowa$age), type = 1)
+  data.frame(age = levels(koncowa$age), type= 1)
 newdata_correctness
 #pro
 
-#newdata_correctness = expand.grid(age = levels(koncowa$age), type = levels(koncowa$type))
+newdata_correctness = expand.grid(age = levels(koncowa$age), type = levels(koncowa$type))
 
 fit_correctness = fitted(
  correctness,
@@ -248,7 +250,7 @@ colnames(fit_old) = newdata_for_old$type
 head(fit_old)
 #this is basically the MCMC chain but converted from regression coefficients for fitted values for each age. 
 
-pro_vs_anti = fit_old[,"1"] - fit_old[,"0"] 
+pro_vs_anti = fit_old[,2] - fit_old[,1] #MP new
 mean(pro_vs_anti>0)
 
 #we can obtain a posterior distribution of this contrast and summarized it:
@@ -257,7 +259,7 @@ plot(density(pro_vs_anti))
 quantile(pro_vs_anti, probs = c(.5, .025, .975)) 
 mean(pro_vs_anti<0)
 
-anti_vs_pro= fit_old[,"0"] - fit_old[,"1"]
+anti_vs_pro= fit_old[,1] - fit_old[,2] #MP new
 hist(anti_vs_pro)
 mean(anti_vs_pro>0)
 quantile(anti_vs_pro, probs = c(.5, .025, .975))
@@ -304,7 +306,7 @@ colnames(fit_young) = newdata_fit_young$type
 head(fit_young)
 #this is basically the MCMC chain but converted from regression coefficients for fitted values for each age. 
 
-pro_vs_anti = fit_young[,"1"] - fit_young[,"0"] 
+pro_vs_anti = fit_young[,1] - fit_young[,2] #MP new
 mean(pro_vs_anti>0)
 
 #we can obtain a posterior distribution of this contrast and summarized it:
@@ -327,11 +329,11 @@ mean(pro_vs_anti<0)
 library(grid)
 library(gridExtra)
 library(gridBase)
-#my = grid.arrange(p1, p2,p3, p4, nrow = 2, top=textGrob("Correctness of performance", #gp=gpar(fontsize=28,fontface = "bold")))
+# my = grid.arrange(p1, p2,p3, p4, nrow = 2, top=textGrob("Correctness of performance", gp=gpar(fontsize=28,fontface = "bold")))
 
 
 my = grid.arrange(p3, p4, nrow = 1, top=textGrob("Correctness of performance", gp=gpar(fontsize=28,fontface = "bold")))
 
-#grid.arrange(p1, p2, nrow = 1)
-#grid.arrange(p3, p4, nrow = 1)
+grid.arrange(p1, p2, nrow = 1)
+grid.arrange(p3, p4, nrow = 1)
 ```
