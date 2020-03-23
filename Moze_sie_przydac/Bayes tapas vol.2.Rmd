@@ -1,0 +1,335 @@
+---
+title: "Bayes Tapas part antisaccades"
+author: "Martyna"
+date: "3/28/2019"
+output: pdf_document
+---
+The following file contains models for the condition: ANTISACCADES.
+
+I limited the diagnostic part to thoroughly analyzing models without test_retest and without prior.
+```{r}
+bayes = read.csv("~/dev/Prosaccades-Antisaccades/Data/bayes_annotated.csv")
+
+# condition: 1 (anti), 2 (pro)
+antisaccades = bayes[bayes$conditions == 1,]
+prosaccades = bayes[bayes$conditions == 2,]
+
+write.csv(antisaccades, "~/dev/Prosaccades-Antisaccades/Data/bayes_anti.csv", 
+          row.names = FALSE)
+write.csv(prosaccades, "~/dev/Prosaccades-Antisaccades/Data/bayes_pro.csv", 
+          row.names = FALSE)
+
+#bayes$late_pro_rt[bayes$conditions == 1] = NaN
+#bayes$inhib_fail_rt[bayes$conditions == 1] = NaN
+#bayes$anti_rt[bayes$conditions == 2] = NaN
+
+write.csv(bayes, "~/dev/Prosaccades-Antisaccades/Data/bayes_annotated_nan.csv", 
+          row.names = FALSE)
+
+bayes_nan = read.csv("~/dev/Prosaccades-Antisaccades/Data/bayes_annotated_nan.csv")
+antisaccades$age <- factor(antisaccades$age)
+antisaccades$test_retest <- factor(antisaccades$test_retest)
+```
+
+Load required packages:
+```{r}
+library(brms)
+theme_set(theme_default())
+```
+
+
+"Late prosaccade probability"
+
+models:
+```{r}
+#models with priors
+prior1 <- brms:::set_prior("cauchy(0,2.5)", class="b")
+prior2 <- brms:::set_prior("cauchy(0,2)", class="b")
+prior3 <- brms:::set_prior("cauchy(0,1)", class="b")
+
+#model without prior and without test_retest
+late_pro_prob_ac_withoutprior_withouttrt<- brm(late_pro_prob  ~ 1 + age, data = antisaccades, family = Beta(),save_all_pars = TRUE)
+
+#model with test_retest and with prior 
+late_pro_prob_ac_withtestrt_withprior<- brm(late_pro_prob  ~ 1 + age +test_retest, data = antisaccades, family = Beta(),save_all_pars = TRUE, sample_prior=T, prior=prior1)
+
+#model with prior and without test_retest
+late_pro_prob_ac_withprior_withouttrt<- brm(late_pro_prob  ~ 1 + age, data = antisaccades, family = Beta(),save_all_pars = TRUE, sample_prior=T, prior=prior1)
+
+#model with test_retest and without prior 
+late_pro_prob_ac_withtestrt_withoutprior<- brm(late_pro_prob  ~ 1 + age +test_retest, data = antisaccades, family = Beta(),save_all_pars = TRUE)
+
+```
+
+In further diagnostic I'll use model without test-retest and without prior
+```{r}
+#The results (i.e., posterior samples) can be investigated using
+summary(late_pro_prob_ac_withoutprior_withouttrt)
+#On the top of the output, some general information on the model is given, 
+#such as family, formula, number of iterations and chains. Next, group-level effects are displayed seperately
+#for each grouping factor in terms of standard deviations. On the bottom of the output, population-level effects
+#(i.e. regression coefficients) are displayed. 
+
+#To visually investigate the chains and the posterior distributions, we use: 
+plot(late_pro_prob_ac_withoutprior_withouttrt, ask = FALSE)
+
+#If we just want to see results of the regression coefficients of age and test_retest, we go for
+plot(late_pro_prob_ac_withoutprior_withouttrt, pars = c("age", "test_retest")) 
+
+#A more detailed investigation of the model:
+#launch_shinystan(late_pro_prob_ac_c_withoutprior_withouttrt)
+
+# Function fitter predict mean values of the response distribution (i.e., the 'regression line') for a fitted model. Can be performed for the data used to fit the model (posterior predictive checks) or for new data.
+fitted_values_late_pro_prob_withoutprior_withouttrt <- fitted(late_pro_prob_ac_withoutprior_withouttrt)
+
+head(fitted_values_late_pro_prob_withoutprior_withouttrt)
+
+#We can perform posterior predictive checks
+pp_late_pro_prob_ac_withoutprior_withouttrt = brms::pp_check(late_pro_prob_ac_withoutprior_withouttrt,nsamples = 100)
+
+#To better understand the relationship of the predictors with the response, we can use the marginal_effects method:
+plot(marginal_effects(late_pro_prob_ac_withoutprior_withouttrt, effects = "age"))
+marginaleffects_late_pro_prob_ac_withoutprior_withouttrt <- brms::marginal_effects(late_pro_prob_ac_withoutprior_withouttrt, points = TRUE)
+```
+
+Custom plot of model predictions:
+(we want to extract the data and make our own plot)
+```{r}
+#first we need to create new data set. We're interested in different levels of age
+newdata = data.frame(age = levels(antisaccades$age))
+fit = fitted(
+ late_pro_prob_ac_withoutprior_withouttrt,
+   newdata = newdata,
+   re_formula = NA,
+ summary = TRUE)
+#we get fitted values for our model. We want just population - level predictions so we are interested in all participants
+#in all ages =>we don't take random effect into account.
+df_plot = cbind(newdata, fit)
+#here we have both levels -old&young, the mean of the posterior distribution, the credible interval
+df_plot
+#we produce very similar plot that marginal effect function gives us, but here we can customize things - we can plot also the actual observed data: 
+#(this graph show both the  observations and  the fitted values)
+ggplot(df_plot, aes(x = age, y = Estimate)) +
+  geom_violin(data=antisaccades, aes(x=age, y=late_pro_prob), alpha=0.5, color="gray70", fill='gray95') +
+  geom_jitter(data=antisaccades, aes(x=age, y=late_pro_prob), alpha=0.3, position = position_jitter(width = 0.07)) +
+  geom_errorbar(aes(ymin=Q2.5, ymax=Q97.5), position=position_dodge(), size=1, width=.5) +
+  geom_point(shape=21, size=4, fill='violet') +
+  #geom_hline(yintercept=50, linetype=2) +
+  xlab("") +
+  ylab('Probability of late prosaccade') +
+  #ylim(0,100) +
+  theme_bw () +
+  theme(panel.grid = element_blank())
+```
+
+But what we are really interested in is COMPARING (=contrasts between ages 0 and 1)
+Contrasts between age - we want to look at the posterior ON ITS CONTRAST
+we use the same fitted function as before but we don't summarize it, so instead of summarizing the posterior we get the full posterior:
+
+```{r}
+fit1 = as.data.frame(fitted(late_pro_prob_ac_withoutprior_withouttrt, newdata = newdata, re_formula = NA, summary = FALSE))
+colnames(fit1) = newdata$age
+head(fit1)
+#this is basically the MCMC chain but converted from regression coefficients for fitted values for each age. 
+
+#If we want to compare old people with young people we can compare them for each step in MCMC chain and then we get the posterior on the contrast between them.
+#We take for each step particular estimate and repeat this operation for each row.
+old_vs_young = fit1[,"1"] - fit1[,"0"] 
+
+#we can obtain a posterior distribution of this contrast and summarized it:
+hist(old_vs_young)
+plot(density(old_vs_young))
+quantile(old_vs_young, probs = c(.5, .025, .975)) 
+
+#the other way
+young_vs_old = 1 - old_vs_young
+hist(young_vs_old)
+plot(density(young_vs_old))
+quantile(young_vs_old, probs = c(.5, .025, .975)) 
+```
+
+"inhib_fail_prob"
+
+models:
+```{r}
+#models with priors
+prior1 <- brms:::set_prior("cauchy(0,2.5)", class="b")
+prior2 <- brms:::set_prior("cauchy(0,2)", class="b")
+prior3 <- brms:::set_prior("cauchy(0,1)", class="b")
+
+#model without prior and without test_retest
+inhib_fail_prob_ac_withoutprior_withouttrt<- brm(inhib_fail_prob  ~ 1 + age, data = antisaccades, family = Beta(),save_all_pars = TRUE)
+
+#model with test_retest and with prior 
+inhib_fail_prob_ac_withtestrt_withprior<- brm(inhib_fail_prob  ~ 1 + age +test_retest, data = antisaccades, family = Beta(),save_all_pars = TRUE, sample_prior=T, prior=prior1)
+
+#model with prior and without test_retest
+inhib_fail_prob_ac_withprior_withouttrt<- brm(inhib_fail_prob  ~ 1 + age, data = antisaccades, family = Beta(),save_all_pars = TRUE, sample_prior=T, prior=prior1)
+
+#model with test_retest and without prior 
+inhib_fail_prob_ac_withtestrt_withoutprior<- brm(inhib_fail_prob  ~ 1 + age +test_retest, data = antisaccades, family = Beta(),save_all_pars = TRUE)
+
+```
+
+summaries & plots of the models
+```{r}
+#model without prior and without test_retest
+summary(inhib_fail_prob_ac_withoutprior_withouttrt)
+plot(inhib_fail_prob_ac_withoutprior_withouttrt)
+
+#model with test_retest and with prior 
+summary(inhib_fail_prob_ac_withtestrt_withprior)
+plot(inhib_fail_prob_ac_withtestrt_withprior)
+
+#model with prior and without test_retest
+summary(inhib_fail_prob_ac_withprior_withouttrt)
+plot(inhib_fail_prob_ac_withprior_withouttrt)
+
+#model with test_retest and without prior 
+summary(inhib_fail_prob_ac_withtestrt_withoutprior)
+plot(inhib_fail_prob_ac_withtestrt_withoutprior)
+
+```
+
+In further diagnostic I'll use model without test-retest and without prior
+```{r}
+fitted_values_inhib_fail_prob_ac_withoutprior_withouttrt <- fitted(inhib_fail_prob_ac_withoutprior_withouttrt)
+
+#Y- probability that we want to model for each person
+dat_fitted_values_inhib_fail_prob_ac_withoutprior_withouttrt <- as.data.frame(cbind(Y = standata(inhib_fail_prob_ac_withoutprior_withouttrt)$Y, fitted_values_inhib_fail_prob_ac_withoutprior_withouttrt))
+
+ggplot(dat_fitted_values_inhib_fail_prob_ac_withoutprior_withouttrt) + geom_point(aes(x = Estimate, y = Y))
+
+ppinhib_fail_prob_ac_withoutprior_withouttrt = brms::pp_check(inhib_fail_prob_ac_withoutprior_withouttrt,nsamples = 100)
+
+marginaleffects_inhib_fail_prob_ac_withoutprior_withouttrt <- 
+  brms::marginal_effects(inhib_fail_prob_ac_withoutprior_withouttrt, points = TRUE)
+marginaleffects_inhib_fail_prob_ac_withoutprior_withouttrt
+
+newdata_inhib_fail_prob_ac_withoutprior_withouttrt = data.frame(age = levels(antisaccades$age))
+
+fit_inhib_fail_prob_ac_withoutprior_withouttrt = fitted(
+ inhib_fail_prob_ac_withoutprior_withouttrt,
+   newdata = newdata_inhib_fail_prob_ac_withoutprior_withouttrt,
+   re_formula = NA,
+ summary = TRUE)
+
+df_plot2 = cbind(newdata_inhib_fail_prob_ac_withoutprior_withouttrt, fit_inhib_fail_prob_ac_withoutprior_withouttrt)
+
+ggplot(df_plot2, aes(x = age, y = Estimate)) +
+  geom_violin(data=antisaccades, aes(x=age, y=inhib_fail_prob), alpha=0.5, color="gray70", fill='gray95') +
+  geom_jitter(data=antisaccades, aes(x=age, y=inhib_fail_prob), alpha=0.3, position = position_jitter(width = 0.07)) +
+  geom_errorbar(aes(ymin=Q2.5, ymax=Q97.5), position=position_dodge(), size=1, width=.5) +
+  geom_point(shape=21, size=4, fill='violet') +
+  #geom_hline(yintercept=50, linetype=2) +
+  xlab("") +
+  ylab('Probability of inhib. fail') +
+  #ylim(0,100) +
+  theme_bw () +
+  theme(panel.grid = element_blank())
+
+```
+Contrasts:
+```{r}
+fit2 = as.data.frame(fitted(inhib_fail_prob_ac_withoutprior_withouttrt, newdata = newdata_inhib_fail_prob_ac_withoutprior_withouttrt, re_formula = NA, summary = FALSE))
+colnames(fit2) = newdata_inhib_fail_prob_ac_withoutprior_withouttrt$age
+head(fit2)
+#this is basically the MCMC chain but converted from regression coefficients for fitted values for each age. 
+
+old_vs_young2 = fit2[,"1"] - fit2[,"0"] 
+
+#we can obtain a posterior distribution of this contrast and summarized it:
+hist(old_vs_young2)
+plot(density(old_vs_young2))
+quantile(old_vs_young2, probs = c(.5, .025, .975)) 
+
+#the other way
+young_vs_old2 = 1 - old_vs_young2
+hist(young_vs_old2)
+plot(density(young_vs_old2))
+quantile(young_vs_old2, probs = c(.5, .025, .975)) 
+```
+Anti_rt
+```{r}
+#models with priors
+prior1 <- brms:::set_prior("cauchy(0,2.5)", class="b")
+prior2 <- brms:::set_prior("cauchy(0,2)", class="b")
+prior3 <- brms:::set_prior("cauchy(0,1)", class="b")
+
+#model without prior and without test_retest
+anti_rt_ac_withoutprior_withouttrt<- brm(anti_rt  ~ 1 + age, data = antisaccades,save_all_pars = TRUE)
+
+#model with test_retest and with prior 
+anti_rt_ac_withtestrt_withprior<- brm(anti_rt  ~ 1 + age +test_retest, data = antisaccades,save_all_pars = TRUE, sample_prior=T, prior=prior1)
+
+#model with prior and without test_retest
+anti_rt_ac_withprior_withouttrt <- brm(anti_rt  ~ 1 + age, data = antisaccades,,save_all_pars = TRUE, sample_prior=T, prior=prior1)
+
+#model with test_retest and without prior 
+anti_rt_ac_withtestrt_withoutprior<- brm(anti_rt ~ 1 + age +test_retest, data = antisaccades,save_all_pars = TRUE)
+
+```
+In further diagnostic I'll use model without test-retest and without prior
+
+```{r}
+fitted_values_anti_rt_ac_withoutprior_withouttrt <- fitted(anti_rt_ac_withoutprior_withouttrt)
+
+#Y- probability that we want to model for each person
+dat_fitted_values_anti_rt_ac_withoutprior_withouttrt <- as.data.frame(cbind(Y = standata(anti_rt_ac_withoutprior_withouttrt)$Y, fitted_values_anti_rt_ac_withoutprior_withouttrt))
+anti_rt_ac_withoutprior_withouttrt + geom_point(aes(x = Estimate, y = Y))
+
+ppanti_rt_ac_withoutprior_withouttrt = brms::pp_check(anti_rt_ac_withoutprior_withouttrt,nsamples = 100)
+
+marginaleffects_anti_rt_ac_withoutprior_withouttrt <- 
+  brms::marginal_effects(anti_rt_ac_withoutprior_withouttrt, points = TRUE)
+marginaleffects_anti_rt_ac_withoutprior_withouttrt
+
+newdata_anti_rt_ac_withoutprior_withouttrt = data.frame(age = levels(antisaccades$age))
+
+fit_anti_rt_ac_withoutprior_withouttrt = fitted(
+ anti_rt_ac_withoutprior_withouttrt,
+   newdata = newdata_anti_rt_ac_withoutprior_withouttrt,
+   re_formula = NA,
+ summary = TRUE)
+
+df_plot3 = cbind(newdata_anti_rt_ac_withoutprior_withouttrt, fit_anti_rt_ac_withoutprior_withouttrt)
+
+ggplot(df_plot3, aes(x = age, y = Estimate)) +
+  geom_violin(data=antisaccades, aes(x=age, y=anti_rt), alpha=0.5, color="gray70", fill='gray95') +
+  geom_jitter(data=antisaccades, aes(x=age, y=anti_rt), alpha=0.3, position = position_jitter(width = 0.07)) +
+  geom_errorbar(aes(ymin=Q2.5, ymax=Q97.5), position=position_dodge(), size=1, width=.5) +
+  geom_point(shape=21, size=4, fill='violet') +
+  #geom_hline(yintercept=50, linetype=2) +
+  xlab("") +
+  ylab('anti rt') +
+  #ylim(0,100) +
+  theme_bw () +
+  theme(panel.grid = element_blank())
+
+```
+
+Contrasts:
+```{r}
+fit3 = as.data.frame(fitted(anti_rt_ac_withoutprior_withouttrt, newdata = newdata_anti_rt_ac_withoutprior_withouttrt, re_formula = NA, summary = FALSE))
+colnames(fit3) = newdata_anti_rt_ac_withoutprior_withouttrt$age
+head(fit3)
+#this is basically the MCMC chain but converted from regression coefficients for fitted values for each age. 
+
+old_vs_young3 = fit3[,"1"] - fit3[,"0"] 
+
+#we can obtain a posterior distribution of this contrast and summarized it:
+hist(old_vs_young3)
+plot(density(old_vs_young3))
+quantile(old_vs_young2, probs = c(.5, .025, .975)) 
+
+#the other way
+young_vs_old3 = 1 - old_vs_young3
+hist(young_vs_old3)
+plot(density(young_vs_old3))
+quantile(young_vs_old3, probs = c(.5, .025, .975)) 
+```
+
+
+```{r}
+```
+

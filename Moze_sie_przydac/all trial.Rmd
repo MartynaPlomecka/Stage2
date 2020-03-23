@@ -1,0 +1,95 @@
+ ---
+title: "all"
+author: "Martysia"
+date: "3/20/2019"
+output: html_document
+---
+
+```{r}
+bayes = read.csv("~/dev/Prosaccades-Antisaccades/Data/bayes_annotated.csv")
+
+# condition: 1 (anti), 2 (pro)
+antisaccades = bayes[bayes$conditions == 1,]
+prosaccades = bayes[bayes$conditions == 2,]
+
+library("brms")
+```
+all_pro without priors, default settings
+```{r}
+all_pro <- brm(cbind(late_pro_prob, inhib_fail_prob, late_pro_rt,  inhib_fail_rt) ~1+ age + test_retest, data=prosaccades)
+all_pro_withoutage <- brm(cbind(late_pro_prob, inhib_fail_prob, late_pro_rt,  inhib_fail_rt) ~1 + test_retest, data=prosaccades)
+all_pro_withouttrt <- brm(cbind(late_pro_prob, inhib_fail_prob, late_pro_rt,  inhib_fail_rt) ~1 +age, data=prosaccades)
+all_pro_onlyintercept <- brm(cbind(late_pro_prob, inhib_fail_prob, late_pro_rt,  inhib_fail_rt) ~1, data=prosaccades)
+summary(all_pro)
+summary(all_pro_withoutage)
+summary(all_pro_withouttrt)
+summary(all_pro_onlyintercept)
+
+all_anti <- brm(cbind(late_pro_prob, inhib_fail_prob, anti_rt) ~1+ age + test_retest, data=antisaccades)
+all_anti_withoutage <- brm(cbind(late_pro_prob, inhib_fail_prob, anti_rt) ~1 + test_retest, data=antisaccades)
+all_anti_withouttrt <- brm(cbind(late_pro_prob, inhib_fail_prob, late_pro_rt,  inhib_fail_rt) ~1 +age, data=antisaccades)
+all_anti_onlyintercept <- brm(cbind(late_pro_prob, inhib_fail_prob, late_pro_rt,  inhib_fail_rt) ~1, data=antisaccades)
+summary(all_anti)
+summary(all_anti_withoutage)
+summary(all_anti_withouttrt)
+summary(all_anti_onlyintercept)
+
+```
+
+HYPOTHESES
+```{r}
+h1=brms:::hypothesis(all_pro, "lateproprob_age  = 0")
+h2=brms:::hypothesis(all_pro, "inhibfailprob_age  = 0")
+h3=brms:::hypothesis(all_pro, "lateprort_age  = 0")
+h4=brms:::hypothesis(all_pro, "inhibfailrt_age  = 0")
+h5=brms:::hypothesis(all_pro, "lateproprob_test_retest  = 0")
+h6=brms:::hypothesis(all_pro, "inhibfailprob_test_retest  = 0")
+h7=brms:::hypothesis(all_pro, "lateprort_test_retest  = 0")
+h8=brms:::hypothesis(all_pro, "inhibfailrt_test_retest = 0")
+
+BF10_h1=1/h1$hypothesis$Evid.Ratio
+BF10_h2=1/h2$hypothesis$Evid.Ratio
+BF10_h3=1/h3$hypothesis$Evid.Ratio
+BF10_h4=1/h4$hypothesis$Evid.Ratio
+BF10_h5=1/h5$hypothesis$Evid.Ratio
+BF10_h6=1/h6$hypothesis$Evid.Ratio
+BF10_h7=1/h7$hypothesis$Evid.Ratio
+BF10_h8=1/h8$hypothesis$Evid.Ratio
+
+BF10_h1
+BF10_h2
+BF10_h3=1/h3$hypothesis$Evid.Ratio
+BF10_h4=1/h4$hypothesis$Evid.Ratio
+BF10_h5=1/h5$hypothesis$Evid.Ratio
+BF10_h6=1/h6$hypothesis$Evid.Ratio
+BF10_h7=1/h7$hypothesis$Evid.Ratio
+BF10_h8=1/h8$hypothesis$Evid.Ratio
+
+
+```
+
+
+
+
+
+
+
+all_pro with priors
+```{r}
+prior1 <- brms:::set_prior("cauchy(0,2.5)", class="b")
+all_pro_prior <- brm(cbind(late_pro_prob, inhib_fail_prob, late_pro_rt,  inhib_fail_rt) ~1+ age + test_retest, data=prosaccades, warmup=80000, iter=120000, sample_prior=T, prior=prior1)
+summary(all_pro_prior)
+plot(all_pro_prior, ask = FALSE)
+```
+all_pro with warmup=80000, iter=120000 WITHOUT PRIOR!
+```{r}
+all_pro_inc <- brm(cbind(late_pro_prob, inhib_fail_prob, late_pro_rt,  inhib_fail_rt) ~1+ age + test_retest, data=prosaccades, warmup=80000, iter=120000)
+summary(all_pro_inc)
+plot(all_pro_inc, ask = FALSE)
+```
+
+
+
+
+
+
