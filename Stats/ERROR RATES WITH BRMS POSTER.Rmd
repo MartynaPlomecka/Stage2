@@ -1,0 +1,119 @@
+---
+title: "ERROR RATES WITH BRMS POSTER"
+author: "Martynka"
+date: "4/15/2019"
+output: pdf_document
+---
+#this
+error rates using brms
+
+Load required packages:
+```{r, cache=FALSE}
+library(brms)
+library(ggplot2)
+```
+
+Load the data
+```{r}
+
+koncowa = read.csv("/Users/mplome/dev/STAGE2/full_data_agg.csv", 
+                     header = TRUE, sep=",")
+View(koncowa)
+
+koncowa$sbj_id <- factor(koncowa$sbj_id)
+koncowa$typ <- factor(koncowa$typ)
+koncowa$age <- factor(koncowa$age)
+```
+
+
+Model1:
+only with type
+```{r, results="hide"}
+glmerror1 <- brm(correct | trials(correct + error) ~ 1 + typ + (1|sbj_id),
+                 data = koncowa, family = binomial(link='probit'))
+summary(glmerror1)
+plot(glmerror1)
+brms::marginal_effects(glmerror1)
+pp_check(glmerror1)
+get_prior(correct | trials(correct + error) ~ 1 + typ + (1|sbj_id),
+                 data = koncowa, family = binomial(link='probit'))
+
+```
+
+Model2:
+with type + age
+```{r, results="hide"}
+glmerror2 <- brm(correct | trials(correct + error) ~ 1 + typ + age+ (1|sbj_id), data = koncowa, family = binomial(link='probit'))
+summary(glmerror2)
+plot(glmerror2)
+brms::marginal_effects(glmerror2)
+pp_check(glmerror2)
+samplesall <- posterior_samples(glmerror2)
+samples1 <- posterior_samples(glmerror2,"b_age1")
+hist(samples1$b_age1)
+#samples2 <- posterior_samples(fit, "b_alphapeakpowFOOOF_age",exact_match = TRUE)
+
+quantile(as.numeric(samples1$b_age1), probs = 0.975)
+1-quantile(as.numeric(samples1$b_age1), probs = 0.975)
+#quantile(as.numeric(samples2$b_alphapeakpowFOOOF_age), probs = 0.025)
+```
+
+Model with interaction age&typee  #najlepszy
+```{r}
+glmerrorinter <- brm(correct | trials(correct + error) ~ 1 + typ*age + (1|sbj_id),
+       data = koncowa, family = binomial(link='probit'))
+summary(glmerrorinter)
+plot(glmerrorinter)
+brms::marginal_effects(glmerrorinter)
+pp_check(glmerrorinter)
+```
+
+
+Compute model weights:
+```{r}
+model_weights(glmerror1,glmerror2,weights = "loo")
+WAIC(glmerror1,glmerror2)
+```
+Compute model weights(2)
+
+#tu sie boję że wyszło coś nie tak, liczyłam na to ze glmerrorinter bedzie najlepszy
+#tyle dobrze ze zarówno waic, jak i loo sugerują to samo
+```{r}
+model_weights(glmerrorinter,glmerror2,weights = "loo")
+
+#Like AIC and BIC, lower values of WAIC indicate a better model fit
+WAIC(glmerrorinter,glmerror2)
+```
+```{r}
+#ppglmerrorinter = brms::pp_check(glmerrorinter,nsamples = 10)
+
+#marginaleffects_glmerrorinter <- 
+ # brms::marginal_effects(glmerrorinter, points = TRUE)
+#marginaleffects_glmerrorinter
+
+newdata_glmerrorinter = 
+  data.frame(age = levels(koncowa$age), typ = "a", correct = 1, error=0)
+
+fit_glmerrorinter = fitted(
+ glmerrorinter,
+   newdata = newdata_glmerrorinter,
+   re_formula = NA,
+ summary = TRUE)
+
+df_plot3 = cbind(newdata_glmerrorinter, fit_glmerrorinter)
+
+ggplot(df_plot3, aes(x = age, y = Estimate)) +
+  geom_violin(data=koncowa, aes(x=age, y=sacc_time), alpha=0.5, color="darkslategray3", fill='darkslategray1', width = 0.2) +
+  geom_jitter(data=koncowa, aes(x=age, y=sacc_time), color="darkslategray3", alpha=0.1, size=0.1, position = position_jitter(width = 0.2)) +
+  geom_errorbar(aes(ymin=Q2.5, ymax=Q97.5), position=position_dodge(), size=1, width=.5) +
+  geom_point(shape=21, size=4, fill='blue') +
+  #geom_hline(yintercept=50, linetypee=2) +
+  xlab("") +
+  ylab('error rate') +
+  #ylim(0,100) +
+   scale_x_discrete(breaks=c("0","1"),
+                   labels=c("young","old")) +
+  theme_bw () +
+  theme(panel.grid = element_blank())
+```
+```

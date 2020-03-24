@@ -54,10 +54,13 @@ bad_ids = sapply(bad_ids_with_test_prefix, function(x) substring(x, 2))
 index = !(table$sbj_id %in% bad_ids) #here are good ones
 final_table = table[index,]
 
-unique(final_table$sbj_id[final_table$age ==1]) # po usunieciu non valid 92 starych
-unique(final_table$sbj_id[final_table$age ==0]) # po usunieciu non valid 83 mlodych
+unique(final_table$sbj_id[final_table$age ==1]) # po usunieciu non valid 92 starych/mozemy jeszcze odjac 12, 
+unique(final_table$sbj_id[final_table$age ==0]) # po usunieciu non valid 83 mlodych/ odejmiemy jeszdze 3
 
 length(final_table)
+
+#Before analyzing data we rejected all subjects they had missing as files (>2 blocks/5 blocks missing, ) or hgad poor quality of the validation, as determined/defined (?) in sample exclusion and inclusion criteria. 
+#After the *wstepne* czyszczenie danych we end up with 160 subjects.
 ################################################################
 #################################################################
 # #teraz wywalamy najpierw te co braly udzial w pilocie
@@ -81,29 +84,38 @@ length(final_table)
 
 #################################################################
 rejected_ids = c(
-  "G0", "P8") 
+  "G0", "P8", 
 #the task was not understood, more than 50%errors
+  # Young
+   "A2", 
+  #old
+  "A0", "A4", "A9", "B0","C2","F3", "F4", 
+   "F5", "F6") 
+
+
 index = !(final_table$sbj_id %in% rejected_ids)
 final_table = final_table[index,]
 
-unique(final_table$sbj_id[final_table$age ==1]) # po usunieciu 92
-unique(final_table$sbj_id[final_table$age ==0]) # po usunieciu 82
+#final sample taken for the future analysess
+unique(final_table$sbj_id[final_table$age ==1]) # po usunieciu 84starych
+unique(final_table$sbj_id[final_table$age ==0]) # po usunieciu 79 mlodych
+
 ################################################################
 #reject all that took part in test only (without retest)
-
 test_only = group_by(final_table,sbj_id, add = FALSE) %>%
   summarise(how_many = n_distinct(test_num))
 
 bad_ids_with_test_only = test_only$sbj_id[test_only$how_many == 1]
 View(bad_ids_with_test_only)
+#	B2,C4,I0,I2, J3, L5, M2, N4, P5, V5, XX <-they only participated once
 
 index = !(final_table$sbj_id %in% bad_ids_with_test_only)
 final_table = final_table[index,]
 
-unique(final_table$sbj_id[final_table$age ==0]) # po usunieciu 78
-unique(final_table$sbj_id[final_table$age ==1]) # po usunieciu 86
-
-#->final_table -> final version for stats
+length(unique(final_table$sbj_id[final_table$age ==0]))# po usunieciu 76
+length(unique(final_table$sbj_id[final_table$age ==1])) # po usunieciu 76
+#152 as determined before
+#->final_table -> final version for stats, 
 
 write.csv(final_table, file = "/Users/mplome/dev/STAGE2/full_data_for_2_stage.csv", row.names=FALSE)
 

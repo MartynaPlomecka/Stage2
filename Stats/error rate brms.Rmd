@@ -329,7 +329,7 @@ mean(pro_vs_anti<0)
 library(grid)
 library(gridExtra)
 library(gridBase)
-# my = grid.arrange(p1, p2,p3, p4, nrow = 2, top=textGrob("Correctness of performance", gp=gpar(fontsize=28,fontface = "bold")))
+my = grid.arrange(p1, p2,p3, p4, nrow = 2, top=textGrob("Correctness of performance", gp=gpar(fontsize=28,fontface = "bold")))
 
 
 my = grid.arrange(p3, p4, nrow = 1, top=textGrob("Correctness of performance", gp=gpar(fontsize=28,fontface = "bold")))

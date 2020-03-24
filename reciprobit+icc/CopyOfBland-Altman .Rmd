@@ -1,0 +1,164 @@
+---
+title: "Bland - Altman plots"
+author: "MP"
+date: "10/11/2019"
+output: pdf_document
+---
+for antisaccades
+```{r}
+library("dplyr")
+library("blandr")
+library("ggplot2")
+library(gridBase)
+library(gridExtra)
+library(gridGraphics)
+df = read.csv("/Users/mplome/dev/STAGE2/full_data_for_2_stage.csv")
+dfagg = read.csv("/Users/mplome/dev/STAGE2/full_data_agg.csv")
+
+head(df)
+```
+ANTI
+```{r}
+#TUTAJ
+loa <- function(x) {
+  c(mean(x) - 1.96 * sd(x), mean(x) + 1.96 * sd(x));
+}
+mean_anti_reaction <- df %>% 
+  filter(block_id %in% c(2,3,4)) %>%
+  group_by(sbj_id, age, test_num) %>%
+  summarise(mean_rt = mean(sacc_time))
+prepare_ba_yng <-mean_anti_reaction %>%
+  filter(age == 0) %>%
+  group_by(sbj_id) %>% 
+  summarise(rt_mean = mean(mean_rt),
+         rt_diff = first(mean_rt) - last(mean_rt))
+prepare_ba_old <- mean_anti_reaction %>%
+  filter(age == 1) %>%
+  group_by(sbj_id) %>% 
+  summarise(rt_mean = mean(mean_rt),
+         rt_diff = first(mean_rt) - last(mean_rt))
+prepare_ba <- mean_anti_reaction %>%
+  group_by(sbj_id) %>% 
+  summarise(rt_mean = mean(mean_rt),
+         rt_diff = first(mean_rt) - last(mean_rt))
+mean_pro_reaction <- df %>% 
+  filter(block_id %in% c(1,5)) %>%
+  group_by(sbj_id, age, test_num) %>%
+  summarise(mean_rt_pro = mean(sacc_time))
+prepare_ba_pro_yng <-mean_pro_reaction %>%
+  filter(age == 0) %>%
+  group_by(sbj_id) %>% 
+ summarise(rt_mean = mean(mean_rt_pro),
+         rt_diff = first(mean_rt_pro) - last(mean_rt_pro))
+prepare_ba_pro_old <-mean_pro_reaction %>%
+  filter(age == 1) %>%
+  group_by(sbj_id) %>% 
+ summarise(rt_mean = mean(mean_rt_pro),
+         rt_diff = first(mean_rt_pro) - last(mean_rt_pro))
+prepare_ba_pro <-mean_pro_reaction %>%
+  group_by(sbj_id) %>% 
+ summarise(rt_mean = mean(mean_rt_pro),
+         rt_diff = first(mean_rt_pro) - last(mean_rt_pro))
+
+dfplot = rbind(cbind(prepare_ba_pro_yng, type='prosaccades', age='young'),
+               cbind(prepare_ba_pro_old, type='prosaccades', age='old'),
+               cbind(prepare_ba_yng, type='antisaccades', age='young'),
+               cbind(prepare_ba_old, type='antisaccades', age='old'))
+
+limits = data.frame(type=c('prosaccades','prosaccades','antisaccades','antisaccades'),
+                    lim=c(loa(prepare_ba_pro$rt_diff), loa(prepare_ba$rt_diff)))
+
+b= ggplot(dfplot, aes(x=rt_mean, y=rt_diff)) + geom_point(aes(color=type, shape=age), size=4) +
+  geom_hline(data=limits, aes(yintercept=lim, color=type), linetype="dashed")+xlab("mean reaction time (ms)")+ylab("test-retest")+ggtitle("Reaction Time")+ 
+  theme(panel.grid = element_blank()) + 
+  theme_bw() +
+  theme(title = element_text(size = 21), axis.text = element_text(size = 18),
+        axis.title = element_text(size = 20)) +
+  theme(legend.title = element_text(size = 20), legend.text = element_text(size = 17))+
+  guides(colour = guide_legend(override.aes = list(size=3)))
+
+b
+
+
+```
+
+```{r}
+loa <- function(x) {
+  c(mean(x) - 1.96 * sd(x), mean(x) + 1.96 * sd(x));
+}
+mean_anti_error <- dfagg %>% 
+  filter(blok %in% c(2,3,4)) %>%
+  group_by(sbj_id, age, test_num) %>%
+  summarise(mean_er = mean(error))
+prepare_ba <-mean_anti_error %>%
+  group_by(sbj_id) %>% 
+ summarise(er_mean = mean(mean_er),
+         er_diff = first(mean_er) - last(mean_er))
+prepare_ba_yng <-mean_anti_error %>%
+  filter(age == 0) %>%
+  group_by(sbj_id) %>% 
+ summarise(er_mean = mean(mean_er),
+         er_diff = first(mean_er) - last(mean_er))
+prepare_ba_old <-mean_anti_error %>%
+  filter(age == 1) %>%
+  group_by(sbj_id) %>% 
+ summarise(er_mean = mean(mean_er),
+         er_diff = first(mean_er) - last(mean_er))
+mean_pro_error <- dfagg %>% 
+  filter(blok %in% c(1,5)) %>%
+  group_by(sbj_id, age, test_num) %>%
+  summarise(mean_er_pro = mean(error))
+prepare_ba_pro <-mean_pro_error %>%
+  group_by(sbj_id) %>% 
+ summarise(er_mean = mean(mean_er_pro),
+         er_diff = first(mean_er_pro) - last(mean_er_pro))
+prepare_ba_pro_yng <-mean_pro_error %>%
+  filter(age == 0) %>%
+  group_by(sbj_id) %>% 
+ summarise(er_mean = mean(mean_er_pro),
+         er_diff = first(mean_er_pro) - last(mean_er_pro))
+prepare_ba_pro_old <-mean_pro_error %>%
+  filter(age == 1) %>%
+  group_by(sbj_id) %>% 
+ summarise(er_mean = mean(mean_er_pro),
+         er_diff = first(mean_er_pro) - last(mean_er_pro))
+dfplot = rbind(cbind(prepare_ba_pro_yng, type='prosaccades', age='young'),
+               cbind(prepare_ba_pro_old, type='prosaccades', age='old'),
+               cbind(prepare_ba_yng, type='antisaccades', age='young'),
+               cbind(prepare_ba_old, type='antisaccades', age='old'))
+
+limits = data.frame(type=c('prosaccades','prosaccades','antisaccades','antisaccades'),
+                    lim=c(loa(prepare_ba_pro$er_diff), loa(prepare_ba$er_diff)))
+
+
+
+
+a = ggplot(dfplot, aes(x=er_mean, y=er_diff)) + geom_point(aes(color=type, shape=age), size=4) +
+  geom_hline(data=limits, aes(yintercept=lim, color=type), linetype="dashed")+xlab( "mean error rate (%)")+ylab("test-retest")+ggtitle("Error Rate") +
+  theme(panel.grid = element_blank()) + 
+  theme_bw() +
+  theme(title = element_text(size = 21), axis.text = element_text(size = 18),
+        axis.title = element_text(size = 20)) +
+  theme(legend.title = element_text(size = 17), legend.text = element_text(size = 10))+
+  guides(colour = guide_legend(override.aes = list(size=2.1115)))
+
+
+
+u1 = grid.arrange(b + theme(legend.position = 'none'),
+                  a + theme(legend.position = 'none'),
+                  nrow = 1,
+                  top=textGrob("", gp=gpar(fontsize = 24,font=8,face="bold" )))
+
+g_legend<-function(a.gplot){
+  tmp <- ggplot_gtable(ggplot_build(a.gplot))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  legend <- tmp$grobs[[leg]]
+  return(legend)}
+
+mylegend<-g_legend(a)
+
+u <- grid.arrange(u1,
+                  mylegend, ncol=2,widths=c(10, 1))
+
+plot(u)
+```
