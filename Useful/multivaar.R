@@ -2,7 +2,7 @@ library(brms)
 library(ggplot2)
 
 #Load the data:
-koncowa <- read.table("/Users/mplome/dev/STAGE2/full_data_agg.csv",
+koncowa <- read.table("/Users/mplome/dev/STAGE2/Data/full_data_agg.csv",
                       header = TRUE, sep=",")
 koncowa$id <- factor(koncowa$sbj_id)
 koncowa$typ <- factor(koncowa$typ)

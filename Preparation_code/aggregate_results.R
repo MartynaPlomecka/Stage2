@@ -1,5 +1,5 @@
 
-subjects <- read.table("/Users/mplome/dev/STAGE2/full_data_for_2_stage.csv", header = TRUE, sep=",")
+subjects <- read.table("/Users/mplome/dev/STAGE2/Data/full_data_for_2_stage.csv", header = TRUE, sep=",")
 View(subjects)
 
 is_correct <- function(row) {
@@ -61,7 +61,7 @@ for (sbj_id in unique(tabela$sbj_id)) {
     }
   }
 }
-write.csv(tabela, file = '/Users/mplome/dev/STAGE2/full_data_agg.csv', row.names=FALSE)
+write.csv(tabela, file = '/Users/mplome/dev/STAGE2/Data/full_data_agg.csv', row.names=FALSE)
 
 
 # library(dplyr)

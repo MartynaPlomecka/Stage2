@@ -8,9 +8,9 @@
 library(readxl)
 
 
-table <- read.table("/Users/mplome/data/full_data_for_2_stage.csv", header = TRUE, sep=",")
-
-ids <- read_excel("/Users/mplome/dev/STAGE2/TRT_old.xlsx")
+#table <- read.table("/Users/mplome/data/full_data_for_2_stage.csv", header = TRUE, sep=",")
+ table <- read.table("/Users/mplome/dev/STAGE2/Data/raw.csv", header = TRUE, sep=",")
+ids <- read_excel("/Users/mplome/dev/STAGE2/Data/TRT_old.xlsx")
 
 table$age = NaN
 for (i in 1:nrow(table)) {

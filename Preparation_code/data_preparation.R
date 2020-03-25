@@ -1,12 +1,12 @@
 library(dplyr)
 library(readxl)
 
-table = read.csv("/Users/mplome/dev/STAGE2/raw.csv", 
+table = read.csv("/Users/mplome/dev/STAGE2/Data/raw.csv", 
                      header = TRUE, sep=",")
 
-ids <- read_excel("/Users/mplome/dev/STAGE2/TRT_old.xlsx")
+ids <- read_excel("/Users/mplome/dev/STAGE2/Data/TRT_old.xlsx")
 
-validation = read.csv("/Users/mplome/dev/STAGE2/validation_offset.csv", 
+validation = read.csv("/Users/mplome/dev/STAGE2/Data/validation_offset.csv", 
                      header = FALSE, sep="," )
 ##########################################################################
 
@@ -117,7 +117,7 @@ length(unique(final_table$sbj_id[final_table$age ==1])) # po usunieciu 76
 #152 as determined before
 #->final_table -> final version for stats, 
 
-write.csv(final_table, file = "/Users/mplome/dev/STAGE2/full_data_for_2_stage.csv", row.names=FALSE)
+write.csv(final_table, file = "/Users/mplome/dev/STAGE2/Data/full_data_for_2_stage.csv", row.names=FALSE)
 
 
 
