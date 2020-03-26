@@ -21,6 +21,10 @@ View(final_with_er)
 all <- brm(mvbind(error_rate, rt, gain, peak_velocity) ~1+ age + typ + (1|sbj_id),
            data = final_with_er)
 
+all <- add_criterion(all, "loo")
+summary(all)
+
+
 #glmerror <- brm(correct | trials(correct + error) ~ 1 + typ + (1|sbj_id),
                 # data = tbl, family = binomial(link='probit'))
 
