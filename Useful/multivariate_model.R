@@ -14,11 +14,9 @@ tbl$test_num <- factor(tbl$test_num)
 final_with_er = tbl %>% 
   group_by(blok) %>% 
   mutate(error_rate =  error/(error+correct))
-view(final_with_er)
+View(final_with_er)
 
-final_with_er = write.csv(final_with_er,"/Users/mplome/dev/STAGE2/Data/full_data_agg_with_er.csv" )
-final_with_er<- read.table("/Users/mplome/dev/STAGE2/Data/full_data_agg_with_er.csv",
-                      header = TRUE, sep=",")
+#final_with_er = write.csv(final_with_er,"/Users/mplome/dev/STAGE2/Data/full_data_agg_with_er.csv" )
 
 all <- brm(mvbind(error_rate, rt, gain, peak_velocity) ~1+ age + typ + (1|sbj_id),
            data = final_with_er)
