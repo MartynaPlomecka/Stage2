@@ -25,10 +25,12 @@ all <- add_criterion(all, "loo")
 summary(all)
 
 
-#glmerror <- brm(correct | trials(correct + error) ~ 1 + typ + (1|sbj_id),
-                # data = tbl, family = binomial(link='probit'))
-
 brms::marginal_effects(all)
 plot(all)
 summary(all)
 brms::pp_check(all)
+
+
+
+
+
