@@ -18,14 +18,15 @@ theme_set(theme_default())
 
 Load the data:
 ```{r}
-library(brms)
+#1-pro
+#0 - anti
 library(ggplot2)
 ```
 
 Load the data
 ```{r}
 
-koncowa = read.csv("/Users/mplome/dev/STAGE2/full_data_for_2_stage.csv", 
+koncowa = read.csv("/Users/mplome/dev/STAGE2/Data/full_data_for_2_stage.csv", 
                      header = TRUE, sep=",")
 
 
@@ -88,12 +89,12 @@ fitted_values_correctness <- fitted(correctness)
 #marginaleffects_correctness
 
 newdata_correctness = 
-  data.frame(age = levels(koncowa$age), type= 1)
+  data.frame(age = levels(koncowa$age), type= 1)# -> czyli tylko PROSAKADY
 newdata_correctness
 #pro
 
-newdata_correctness = expand.grid(age = levels(koncowa$age), type = levels(koncowa$type))
-
+#newdata_correctness = expand.grid(age = levels(koncowa$age), type = levels(koncowa$type))
+#co to robilo
 fit_correctness = fitted(
  correctness,
    newdata = newdata_correctness,
@@ -104,6 +105,7 @@ fit_correctness = fitted(
 df_plot = cbind(newdata_correctness, fit_correctness)
 obs_pro = obs[obs$type == 1,]
 #pro
+
 p4 = ggplot(df_plot, aes(x = age, y = Estimate)) +
   geom_violin(data=obs_pro, aes(x=age, y=correct), alpha=0.4, color="coral3", fill='coral1', width = 0.25) +
   geom_jitter(data=obs_pro, aes(x=age, y=correct), color="coral2", alpha=0.56, size=1.4, position = position_jitter(width = 0.45)) +
@@ -114,7 +116,7 @@ p4 = ggplot(df_plot, aes(x = age, y = Estimate)) +
   ylab(' prosaccadess, %') +
   ylim(75,100)  +
    scale_x_discrete(breaks=c("0","1"),
-                   labels=c("old","young") ) + ggtitle("") +
+                   labels=c("young","old") ) + ggtitle("") +
     #theme_bw () +
   theme(panel.grid = element_blank()) + 
   theme(axis.text=element_text(size=19),
@@ -123,6 +125,8 @@ p4 = ggplot(df_plot, aes(x = age, y = Estimate)) +
 theme(plot.title = element_text(color="grey19", size=21, face="bold")) +
 
   theme(panel.grid = element_blank())
+
+plot(p4)
 ```
 
 ```{r}
@@ -154,7 +158,7 @@ p3=ggplot(df_plotanti, aes(x = age, y = Estimate)) +
   ylab('antisaccadess, %') +
   ylim(75,100)  +
    scale_x_discrete(breaks=c("0","1"),
-                   labels=c("old","young") ) + ggtitle("") +
+                   labels=c("young","old") ) + ggtitle("") +
     #theme_bw () +
   theme(panel.grid = element_blank()) + 
   theme(axis.text=element_text(size=19),
@@ -162,6 +166,8 @@ p3=ggplot(df_plotanti, aes(x = age, y = Estimate)) +
   theme(axis.text.x = element_text(size=19, face="bold")) +
   theme(plot.title = element_text(color="grey19", size=21, face="bold"))
 
+
+plot(p3)
 ```
 
 CONTRASTS ON AGE for antisaccades
@@ -320,8 +326,8 @@ mean(pro_vs_anti<0)
 #mean(anti_vs_pro>0)
 #quantile(anti_vs_pro, probs = c(.5, .025, .975))
 
-
-
+plot(p1)
+plot(p2)
 
 ```
 
@@ -329,7 +335,6 @@ mean(pro_vs_anti<0)
 library(grid)
 library(gridExtra)
 library(gridBase)
-my = grid.arrange(p1, p2,p3, p4, nrow = 2, top=textGrob("Correctness of performance", gp=gpar(fontsize=28,fontface = "bold")))
 
 
 my = grid.arrange(p3, p4, nrow = 1, top=textGrob("Correctness of performance", gp=gpar(fontsize=28,fontface = "bold")))
