@@ -39,4 +39,4 @@ var_eig = var(es$values) # -> obtained value =  0.1909774
 #Meff = 1+3*(1 - 0.04774435) = 3.856767
 
 
-#5/3.856767 = 1.296423 -  > wiec rozszerzamy nasz CI o 1.3,  czyli zamiast 95% CI badam 96.3% CI
+#5/3.856767 = 1.296423~1,3 -  > instead of 95% CI -> 98.7%
