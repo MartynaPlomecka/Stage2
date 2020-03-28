@@ -20,7 +20,7 @@ View(final_with_er)
 
 all <- brm(mvbind(error_rate, rt, gain, peak_velocity) ~1+ age + typ + (1|sbj_id),
            data = final_with_er)
-summary(all, priors = FALSE, prob = 0.963) #after correcting for multiple comparisons with the nyholt approach, for details see:Stats ->Nyholt
+summary(all, priors = FALSE, prob = 0.987) #after correcting for multiple comparisons with the nyholt approach, for details see:Stats ->Nyholt
 
 
 all <- add_criterion(all, "loo")
