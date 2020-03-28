@@ -61,6 +61,7 @@ for (sbj_id in unique(tabela$sbj_id)) {
     }
   }
 }
+
 write.csv(tabela, file = '/Users/mplome/dev/STAGE2/Data/full_data_agg.csv', row.names=FALSE)
 
 

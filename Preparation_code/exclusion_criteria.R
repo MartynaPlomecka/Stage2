@@ -1,13 +1,25 @@
 library(dplyr)
-table = read.csv('/Users/mplome/dev/STAGE2/Data/full_data_agg.csv', 
+table_agg = read.csv('/Users/mplome/dev/STAGE2/Data/full_data_agg.csv', 
                      header = TRUE, sep=",")
 
+table = read.csv('/Users/mplome/dev/STAGE2/Data/full_data_for_2_stage.csv', 
+                     header = TRUE, sep=",")
+################################################################
+################################################################
 
+#trial exclusion criteria based on length
+# define cut offs ->50 & 800
+table = table[(table$sacc_time>50 )& (table$sacc_time<800) , ]
+#sanity check : table[(table$sacc_time<50),]
+write.csv(table, file = '/Users/mplome/dev/STAGE2/Data/full_data_for_2_stage.csv', row.names=FALSE)
+
+################################################################
+################################################################
 
 #subjects exclusion criteria based on bad performance
 
 # blocks with more than 50%errors
- df <- table %>% 
+ df <- table_agg %>% 
    filter((error < correct))
 
 
@@ -38,10 +50,4 @@ length(unique(final$sbj_id[final$age ==1])) # po usunieciu 70 sstarych
 #143 overall ->sample to stage 2
 write.csv(final, file = '/Users/mplome/dev/STAGE2/Data/full_data_agg.csv', row.names=FALSE)
 
-#trial exclusion criteria based on length
 
-
-
-# define cut offs
-#subjects_100_800 = subjects[(subjects$sacc_time>100 )& (subjects$sacc_time<800) , ]
-#subjects_100_800
