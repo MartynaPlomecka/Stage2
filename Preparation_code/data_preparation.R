@@ -9,7 +9,7 @@ ids <- read_excel("/Users/mplome/dev/STAGE2/Data/TRT_old.xlsx")
 validation = read.csv("/Users/mplome/dev/STAGE2/Data/validation_offset.csv", 
                      header = FALSE, sep="," )
 ##########################################################################
-
+#merging info about age
 table$age = NaN
 for (i in 1:nrow(table)) {
   row = table[i,]
@@ -18,14 +18,48 @@ for (i in 1:nrow(table)) {
   table$age[i] = age
 }
 
-
-
 unique(table$sbj_id[table$age == 0]) #teraz mamy 91 mlodych
 unique(table$sbj_id[table$age == 1])  #101 starych, razem 192
 
 
+################################################################
+#reject all that took part in test only (without retest)
+test_only = group_by(table,sbj_id, add = FALSE) %>%
+  summarise(how_many = n_distinct(test_num))
 
+bad_ids_with_test_only = test_only$sbj_id[test_only$how_many == 1]
+View(bad_ids_with_test_only)
+#A5,B2, B8,C4,D7,I0,I2, I8, J3, K8,L5,L8,M2,N4,P4,P5,R5,S3,V5,XX
+#	<-they only participated once
+
+index = !(table$sbj_id %in% bad_ids_with_test_only)
+table = table[index,]
+
+length(unique(table$sbj_id[table$age ==0]))# po usunieciu 80
+length(unique(table$sbj_id[table$age ==1])) # po usunieciu 91sstarych
+#171 overall
+#################################################################
+#used before
+rejected_ids = c(
+  "G0", "P8", # more than 50%errors
+  # Young
+   "A2", "C0", "C1", "C7",
+  #old
+  "A0", "A4", "A9", "B0","C2","F3", "F4", 
+   "F5", "F6","F9","H0","H6", "L7", "M5", 
+  #bad performance, check exclusion criteria -> was done on the aggregated data
+  "N6", "Q8"
+
+  ) 
+
+index = !(table$sbj_id %in% rejected_ids)
+table = table[index,]
+
+length(unique(table$sbj_id[table$age ==0]))# po usunieciu 75 mlodych
+length(unique(table$sbj_id[table$age ==1])) # po usunieciu 76 sstarych
+#152 overall ->sample to stage 2
 ##########################################################################
+
 #VALIDATION PART
 validation_data = validation[2:6]
 validation_id = validation[1]
@@ -54,13 +88,16 @@ bad_ids = sapply(bad_ids_with_test_prefix, function(x) substring(x, 2))
 index = !(table$sbj_id %in% bad_ids) #here are good ones
 final_table = table[index,]
 
-unique(final_table$sbj_id[final_table$age ==1]) # po usunieciu non valid 92 starych/mozemy jeszcze odjac 12, 
-unique(final_table$sbj_id[final_table$age ==0]) # po usunieciu non valid 83 mlodych/ odejmiemy jeszdze 3
-
-length(final_table)
+unique(final_table$sbj_id[final_table$age ==1]) #remained ids 
+length(unique(final_table$sbj_id[final_table$age ==1]))#73
+unique(final_table$sbj_id[final_table$age ==0]) # remained yng ids
+length(unique(final_table$sbj_id[final_table$age ==0]))#74 (ale c7 wykluczony bo byl pilotem, czyli 73)
+#146
 
 #Before analyzing data we rejected all subjects they had missing as files (>2 blocks/5 blocks missing, ) or hgad poor quality of the validation, as determined/defined (?) in sample exclusion and inclusion criteria. 
-#After the *wstepne* czyszczenie danych we end up with 160 subjects.
+
+
+
 ################################################################
 #################################################################
 # #teraz wywalamy najpierw te co braly udzial w pilocie
@@ -82,40 +119,10 @@ length(final_table)
 # unique(final_table$sbj_id[final_table$age ==1]) # po usunieciu non valid 74 starych
 # unique(final_table$sbj_id[final_table$age ==0]) # po usunieciu non valid 62 mlodych
 
-#################################################################
-rejected_ids = c(
-  "G0", "P8", 
-#the task was not understood, more than 50%errors
-  # Young
-   "A2", 
-  #old
-  "A0", "A4", "A9", "B0","C2","F3", "F4", 
-   "F5", "F6") 
-
-
-index = !(final_table$sbj_id %in% rejected_ids)
-final_table = final_table[index,]
-
-#final sample taken for the future analysess
-unique(final_table$sbj_id[final_table$age ==1]) # po usunieciu 84starych
-unique(final_table$sbj_id[final_table$age ==0]) # po usunieciu 79 mlodych
 
 ################################################################
-#reject all that took part in test only (without retest)
-test_only = group_by(final_table,sbj_id, add = FALSE) %>%
-  summarise(how_many = n_distinct(test_num))
+#################################################################
 
-bad_ids_with_test_only = test_only$sbj_id[test_only$how_many == 1]
-View(bad_ids_with_test_only)
-#	B2,C4,I0,I2, J3, L5, M2, N4, P5, V5, XX <-they only participated once
-
-index = !(final_table$sbj_id %in% bad_ids_with_test_only)
-final_table = final_table[index,]
-
-length(unique(final_table$sbj_id[final_table$age ==0]))# po usunieciu 76
-length(unique(final_table$sbj_id[final_table$age ==1])) # po usunieciu 76
-#152 as determined before
-#->final_table -> final version for stats, 
 
 write.csv(final_table, file = "/Users/mplome/dev/STAGE2/Data/full_data_for_2_stage.csv", row.names=FALSE)
 
