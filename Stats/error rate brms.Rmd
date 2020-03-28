@@ -9,7 +9,7 @@ TEGO UZYWAJ
 Tutaj jest najaktualniejszy skrypt, uzyty do postera
 
 nd 22.03 - updated
-
+pt 27.03 -updated
 Load required packages:
 ```{r, cache=FALSE}
 library(brms)
