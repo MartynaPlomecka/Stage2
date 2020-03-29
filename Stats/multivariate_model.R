@@ -6,6 +6,9 @@ library(tidyverse)
 tbl<- read.table("/Users/mplome/dev/STAGE2/Data/full_data_agg.csv",
                       header = TRUE, sep=",")
 head(tbl)
+
+
+
 tbl$id <- factor(tbl$sbj_id)
 tbl$typ <- factor(tbl$typ)
 tbl$age <- factor(tbl$age)
@@ -19,12 +22,14 @@ View(final_with_er)
 #final_with_er = write.csv(final_with_er,"/Users/mplome/dev/STAGE2/Data/full_data_agg_with_er.csv" )
 
 all <- brm(mvbind(error_rate, rt, gain, peak_velocity) ~1+ age + typ + (1|sbj_id),
-           data = final_with_er)
-summary(all, priors = FALSE, prob = 0.987) #after correcting for multiple comparisons with the nyholt approach, for details see:Stats ->Nyholt
+          prior = prior, data = final_with_er)
 
 
-all <- add_criterion(all, "loo")
-summary(all)
+summary(all, priors = TRUE, prob = 0.987) #after correcting for multiple comparisons with the nyholt approach, for details see:Stats ->Nyholt
+
+prior<-c(set_prior("cauchy(0, 10)",class = "b", coef = ""),set_prior("cauchy(0, 10)", class = "Intercept", coef = ""))
+
+
 
 
 brms::marginal_effects(all)
