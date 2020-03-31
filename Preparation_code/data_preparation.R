@@ -28,8 +28,8 @@ test_only = group_by(table,sbj_id, add = FALSE) %>%
   summarise(how_many = n_distinct(test_num))
 
 bad_ids_with_test_only = test_only$sbj_id[test_only$how_many == 1]
-View(bad_ids_with_test_only)
-#A5,B2, B8,C4,D7,I0,I2, I8, J3, K8,L5,L8,M2,N4,P4,P5,R5,S3,V5,XX
+#View(bad_ids_with_test_only)
+#A5,B2, B8,C4,D7,I0,I2, I8, J3, K8,L5,L8,M2,N4,P4,P5,R5,S3,V5,XX %20 subjects took part only in test
 #	<-they only participated once
 
 index = !(table$sbj_id %in% bad_ids_with_test_only)
@@ -56,7 +56,7 @@ index = !(table$sbj_id %in% rejected_ids)
 table = table[index,]
 
 length(unique(table$sbj_id[table$age ==0]))# po usunieciu 75 mlodych
-length(unique(table$sbj_id[table$age ==1])) # po usunieciu 76 sstarych
+length(unique(table$sbj_id[table$age ==1])) # po usunieciu 74 sstarych/bylo 76, ale 2 wyrzucono
 #152 overall ->sample to stage 2
 ##########################################################################
 
@@ -125,11 +125,10 @@ length(unique(final_table$sbj_id[final_table$age ==0]))#74 (ale c7 wykluczony bo
 
 
 write.csv(final_table, file = "/Users/mplome/dev/STAGE2/Data/full_data_for_2_stage.csv", row.names=FALSE)
+dim(raw) #86880    11
+dim(final_table) #68411    12
 
-
-
-
-
+length(unique(final_table$sbj_id))
 
 
 

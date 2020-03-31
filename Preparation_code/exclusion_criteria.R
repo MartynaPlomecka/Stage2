@@ -12,7 +12,8 @@ table = read.csv('/Users/mplome/dev/STAGE2/Data/full_data_for_2_stage.csv',
 table = table[(table$sacc_time>50 )& (table$sacc_time<800) , ]
 #sanity check : table[(table$sacc_time<50),]
 write.csv(table, file = '/Users/mplome/dev/STAGE2/Data/full_data_for_2_stage.csv', row.names=FALSE)
-
+dim(table)
+69120-66075
 ################################################################
 ################################################################
 
