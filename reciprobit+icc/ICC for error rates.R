@@ -2,10 +2,10 @@
 library(dplyr)
 library(irr)
 #load data
-najlepszaagg = read.csv("/Users/mplome/dev/STAGE2/Data/full_data_agg.csv")
-head(najlepszaagg)
-oldagg = najlepszaagg[najlepszaagg$age==1,]
-yngagg= najlepszaagg[najlepszaagg$age==0,]
+table_agg = read.csv("/Users/mplome/dev/STAGE2/Data/full_data_agg.csv")
+head(table_agg)
+oldagg = table_agg[table_agg$age==1,]
+yngagg= table_agg[table_agg$age==0,]
 
 #old
 protestoldagg = oldagg[oldagg$typ=="p" & oldagg$test_num==1, ]
