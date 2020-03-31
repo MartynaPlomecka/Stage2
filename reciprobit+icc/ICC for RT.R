@@ -2,7 +2,7 @@ library(dplyr)
 library(irr)
 
 #load data
-table_agg = read.csv("/Users/mplome/dev/STAGE2/full_data_agg.csv")
+table_agg = read.csv("/Users/mplome/dev/STAGE2/Data/full_data_agg.csv")
 head(table_agg)
 oldagg = table_agg[table_agg$age==1,]
 youngagg= table_agg[table_agg$age==0,]
