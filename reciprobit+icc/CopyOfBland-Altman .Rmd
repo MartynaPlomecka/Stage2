@@ -12,8 +12,8 @@ library("ggplot2")
 library(gridBase)
 library(gridExtra)
 library(gridGraphics)
-df = read.csv("/Users/mplome/dev/STAGE2/full_data_for_2_stage.csv")
-dfagg = read.csv("/Users/mplome/dev/STAGE2/full_data_agg.csv")
+df = read.csv("/Users/mplome/dev/STAGE2/Data/full_data_for_2_stage.csv")
+dfagg = read.csv("/Users/mplome/dev/STAGE2/Data/full_data_agg.csv")
 
 head(df)
 ```
@@ -68,7 +68,7 @@ dfplot = rbind(cbind(prepare_ba_pro_yng, type='prosaccades', age='young'),
 limits = data.frame(type=c('prosaccades','prosaccades','antisaccades','antisaccades'),
                     lim=c(loa(prepare_ba_pro$rt_diff), loa(prepare_ba$rt_diff)))
 
-b= ggplot(dfplot, aes(x=rt_mean, y=rt_diff)) + geom_point(aes(color=type, shape=age), size=4) +
+b= ggplot(dfplot, aes(x=rt_mean, y=rt_diff)) + geom_point(aes(color=type, shape=age), size=2) +
   geom_hline(data=limits, aes(yintercept=lim, color=type), linetype="dashed")+xlab("mean reaction time (ms)")+ylab("test-retest")+ggtitle("Reaction Time")+ 
   theme(panel.grid = element_blank()) + 
   theme_bw() +
@@ -133,7 +133,7 @@ limits = data.frame(type=c('prosaccades','prosaccades','antisaccades','antisacca
 
 
 
-a = ggplot(dfplot, aes(x=er_mean, y=er_diff)) + geom_point(aes(color=type, shape=age), size=4) +
+a = ggplot(dfplot, aes(x=er_mean, y=er_diff)) + geom_point(aes(color=type, shape=age), size=2) +
   geom_hline(data=limits, aes(yintercept=lim, color=type), linetype="dashed")+xlab( "mean error rate (%)")+ylab("test-retest")+ggtitle("Error Rate") +
   theme(panel.grid = element_blank()) + 
   theme_bw() +
