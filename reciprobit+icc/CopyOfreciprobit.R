@@ -5,7 +5,7 @@ library(grid)
 library(gridExtra)
 library(lattice)
 
-table = read.csv("/Users/mplome/dev/STAGE2/full_data_for_2_stage.csv")
+table = read.csv("/Users/mplome/dev/STAGE2/Data/full_data_for_2_stage.csv")
 
 val_ecdf <- function(x){
   my_ecdf <- ecdf(x)

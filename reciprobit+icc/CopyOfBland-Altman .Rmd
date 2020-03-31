@@ -23,6 +23,7 @@ ANTI
 loa <- function(x) {
   c(mean(x) - 1.96 * sd(x), mean(x) + 1.96 * sd(x));
 }
+
 mean_anti_reaction <- df %>% 
   filter(block_id %in% c(2,3,4)) %>%
   group_by(sbj_id, age, test_num) %>%
@@ -83,9 +84,11 @@ b
 ```
 
 ```{r}
+# 95% of the data points should lie within ±1.96 SD of the mean difference limits of agreement.
 loa <- function(x) {
   c(mean(x) - 1.96 * sd(x), mean(x) + 1.96 * sd(x));
 }
+
 mean_anti_error <- dfagg %>% 
   filter(blok %in% c(2,3,4)) %>%
   group_by(sbj_id, age, test_num) %>%
@@ -161,4 +164,25 @@ u <- grid.arrange(u1,
                   mylegend, ncol=2,widths=c(10, 1))
 
 plot(u)
+```
+
+
+```{r}
+#checking the assumptions
+
+#ER
+lm = loa(prepare_ba_pro$er_diff) #-2.893563  2.746710
+#pro
+sum((prepare_ba_pro$er_diff >= lm[1]) & (prepare_ba_pro$er_diff <= lm[2]))/length(prepare_ba_pro$er_diff)#0.9440559
+#anti
+lm_anti = loa(prepare_ba$er_diff) #-4.563321  4.824394
+sum((prepare_ba$er_diff >= lm_anti[1]) & (prepare_ba$er_diff <= lm_anti[2]))/length(prepare_ba$er_diff)
+#0.9440559
+###RT
+lm = loa(prepare_ba_pro$rt_diff) # -46.53322  52.50627
+sum((prepare_ba_pro$rt_diff >= lm[1]) & (prepare_ba_pro$rt_diff <= lm[2]))/length(prepare_ba_pro$rt_diff) #0.9722222
+#anti
+lm = loa(prepare_ba$rt_diff) #-42.44534  58.73426
+sum((prepare_ba$rt_diff >= lm[1]) & (prepare_ba$rt_diff <= lm[2]))/length(prepare_ba$rt_diff)
+#0.9375
 ```
