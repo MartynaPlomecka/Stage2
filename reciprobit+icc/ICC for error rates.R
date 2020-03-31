@@ -1,4 +1,4 @@
-#IRR for error rate 
+#ICC for error rate 
 library(dplyr)
 library(irr)
 #load data
