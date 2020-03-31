@@ -1,7 +1,7 @@
 library(brms)
 library(ggplot2)
 library(tidyverse)
-
+library(dplyr)
 #Load the data:
 tbl<- read.table("/Users/mplome/dev/STAGE2/Data/full_data_agg.csv",
                       header = TRUE, sep=",")
