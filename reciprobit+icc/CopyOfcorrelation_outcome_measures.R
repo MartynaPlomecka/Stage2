@@ -6,7 +6,7 @@ library(gridBase)
 library(gridExtra)
 library(grid)
 
-final <- read.table("/Users/mplome/dev/STAGE2/full_data_for_2_stage.csv",
+final <- read.table("/Users/mplome/dev/STAGE2/Data/full_data_for_2_stage.csv",
                     header = TRUE, sep=",")
 
 create_ggplot <- function(proold1t, proold2t, antiold1t, antiold2t,
@@ -20,7 +20,7 @@ create_ggplot <- function(proold1t, proold2t, antiold1t, antiold2t,
   )
   
   ggplot(df_plot, aes(x=test, y=retest)) +
-    geom_point(aes(color=type, shape=age), size=4) +
+    geom_point(aes(color=type, shape=age), size=2) +
     xlim(xlimits[1], xlimits[2]) +
     ylim(ylimits[1], ylimits[2]) +
     ggtitle(title) +
@@ -32,8 +32,8 @@ create_ggplot <- function(proold1t, proold2t, antiold1t, antiold2t,
     theme(legend.title = element_text(size = 20)) +
     theme(axis.text = element_text(size = 17),
           axis.title = element_text(size = 20)) +
-    guides(colour = guide_legend(override.aes = list(size=7)),
-           shape = guide_legend(override.aes = list(size=7)))
+    guides(colour = guide_legend(override.aes = list(size=4)),
+           shape = guide_legend(override.aes = list(size=4)))
 }
 
 
@@ -47,7 +47,6 @@ proyoung = icc[icc$age ==0 & icc$type==1, ]
 antiold = icc[icc$age==1 & icc$type==0, ]
 antiyoung = icc[icc$age==0 & icc$type==0, ]
 
-
 proold1 = icc[icc$age ==1 & icc$type==1 & icc$test_num==1, ]
 proyoung1 = icc[icc$age ==0 & icc$type==1 & icc$test_num==1, ]
 antiold1 = icc[icc$age==1 & icc$type==0 & icc$test_num==1, ]
@@ -57,7 +56,6 @@ proold2 = icc[icc$age ==1 & icc$type==1 & icc$test_num==2, ]
 proyoung2 = icc[icc$age ==0 & icc$type==1 & icc$test_num==2, ]
 antiold2 = icc[icc$age==1 & icc$type==0 & icc$test_num==2, ]
 antiyoung2 = icc[icc$age==0 & icc$type==0 & icc$test_num==2, ]
-
 
 proold1t = proold1$avg
 proyoung1t = proyoung1$avg
@@ -125,7 +123,7 @@ b = create_ggplot(proold1t, proold2t, antiold1t, antiold2t,
 ########
 # gain
 #######
-final <- read.table("/Users/mplome/dev/Prosaccades-Antisaccades/Data/baza.csv",
+final <- read.table("/Users/mplome/dev/STAGE2/Data/full_data_for_2_stage.csv",
                       header = TRUE, sep=",")
 
 icc = final %>% group_by(sbj_id, age,type, test_num) %>% summarise(avg=mean(gain))
@@ -168,7 +166,7 @@ c = create_ggplot(proold1t, proold2t, antiold1t, antiold2t,
 ###Error rate
 ##############
 
-final <- read.table("/Users/mplome/data/od50agg.csv",
+final <- read.table("/Users/mplome/dev/STAGE2/Data/full_data_for_2_stage.csv",
                       header = TRUE, sep=",")
 final$error_rate = final$error / (final$error + final$correct)
 head(final)
@@ -210,7 +208,7 @@ antiyoung2t = antiyoung2$avg
 
 d = create_ggplot(proold1t, proold2t, antiold1t, antiold2t,
                   proyoung1t, proyoung2t, antiyoung1t, antiyoung2t,
-                  'Error Rate', c(0.,0.5), c(0.,0.5))
+                  'Error Rate', c(0.,0.4), c(0.,0.4))
 
 
 
