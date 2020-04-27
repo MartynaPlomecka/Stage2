@@ -1,6 +1,6 @@
 
 
-*This is the repository for my registered report "Aging effects and test-retest reliability of inhibitory control for saccadic eye movements". Stage 1 was already accepted in eNeuro: https://osf.io/4fu6r/*
+*This is the repository for the registered report "Aging effects and test-retest reliability of inhibitory control for saccadic eye movements". Stage 1 was already accepted in eNeuro: https://osf.io/4fu6r/*
 
 *In case of any comments please contact me: martyna.plomecka@uzh.ch*
 
