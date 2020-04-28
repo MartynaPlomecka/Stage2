@@ -4,6 +4,7 @@ author: "Martynka"
 date: "04.19"
 output: pdf_document
 ---
+#VALIDATED 27.04
 1-prosakada
 0- antysakada
 Load required packages:
@@ -14,7 +15,7 @@ library(ggplot2)
 
 Load the data:
 ```{r}
-koncowa <- read.table("/Users/mplome/dev/STAGE2/full_data_agg.csv",
+koncowa <- read.table("/Users/mplome/dev/STAGE2/Data/full_data_agg.csv",
                       header = TRUE, sep=",")
 koncowa$id <- factor(koncowa$sbj_id)
 koncowa$typ <- factor(koncowa$typ)
@@ -130,7 +131,7 @@ b = ggplot(df_plot, aes(x = age, y = Estimate)) +
   ylim(150,500) +
   scale_x_discrete(breaks=c("0","1"),
                    labels=c("young","old") ) +  ggtitle("")+
-    #theme_bw () +
+    theme_bw () +
   theme(panel.grid = element_blank()) + 
   theme(axis.text=element_text(size=19),
         axis.title=element_text(size=19,face="bold")) +
@@ -138,6 +139,9 @@ b = ggplot(df_plot, aes(x = age, y = Estimate)) +
 theme(plot.title = element_text(color="grey19", size=21, face="bold"))
 
   theme(panel.grid = element_blank())
+  
+  
+  plot(b)
 ```
 
 ```{r}
@@ -168,7 +172,7 @@ a= ggplot(df_plotanti, aes(x = age, y = Estimate)) +
   ylim(150,500) +
   scale_x_discrete(breaks=c("0","1"),
                    labels=c("young","old") ) + ggtitle("")+
-    #theme_bw () +
+    theme_bw () +
 #theme_bw () +
   theme(panel.grid = element_blank()) + 
   theme(axis.text=element_text(size=19),
@@ -182,7 +186,7 @@ library(gridGraphics)
 library(gridBase)
 library(gridExtra)
 
-grid.arrange(a, b, nrow = 1)
+eneuro = grid.arrange(a, b, nrow = 1)
 
 ```
 
@@ -365,14 +369,13 @@ young =  ggplot(df_plot, aes(x = type, y = Estimate)) +
   ylim(0,700) +
   scale_x_discrete(breaks=c("0","1"),
                    labels=c("antisaccades","prosaccades") )  + ggtitle("A")+
-    #theme_bw () +
+    theme_bw () +
 #theme_bw () +
   theme(panel.grid = element_blank()) + 
   theme(axis.text=element_text(size=19),
         axis.title=element_text(size=19,face="bold")) +
   theme(axis.text.x = element_text(size=19, face="bold")) +
-theme(plot.title = element_text(color="grey19", size=21, face="bold"))
-
+theme(plot.title = element_text(color="grey19", size=21, face="bold")) + theme_bw()
   theme(panel.grid = element_blank())
 ```
 
