@@ -7,10 +7,12 @@ output: pdf_document
 for antisaccades
 ```{r}
 library("dplyr")
+
 library("blandr")
 library("ggplot2")
+#install.packages("gridBase")
 library(gridBase)
-library(gridExtra)
+#install.packages("gridGraphics")
 library(gridGraphics)
 df = read.csv("/Users/mplome/dev/STAGE2/Data/full_data_for_2_stage.csv")
 dfagg = read.csv("/Users/mplome/dev/STAGE2/Data/full_data_agg.csv")
@@ -178,6 +180,8 @@ sum((prepare_ba_pro$er_diff >= lm[1]) & (prepare_ba_pro$er_diff <= lm[2]))/lengt
 lm_anti = loa(prepare_ba$er_diff) #-4.563321  4.824394
 sum((prepare_ba$er_diff >= lm_anti[1]) & (prepare_ba$er_diff <= lm_anti[2]))/length(prepare_ba$er_diff)
 #0.9440559
+
+
 ###RT
 lm = loa(prepare_ba_pro$rt_diff) # -46.53322  52.50627
 sum((prepare_ba_pro$rt_diff >= lm[1]) & (prepare_ba_pro$rt_diff <= lm[2]))/length(prepare_ba_pro$rt_diff) #0.9722222

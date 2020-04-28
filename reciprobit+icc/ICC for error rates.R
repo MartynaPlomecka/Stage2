@@ -11,6 +11,7 @@ yngagg= table_agg[table_agg$age==0,]
 protestoldagg = oldagg[oldagg$typ=="p" & oldagg$test_num==1, ]
 antitestoldagg = oldagg[oldagg$typ=="a" & oldagg$test_num==1, ]
 proretestoldagg = oldagg[oldagg$typ=="p" & oldagg$test_num==2, ]
+
 antiretestoldagg = oldagg[oldagg$typ=="a" & oldagg$test_num==2, ]
 
 #yng
@@ -61,6 +62,7 @@ mantiretestyngagg = antiretestyngagg %>%
 
 ######################preparation error rate#icc 1 from wiki
 eprotrtoldagg <- merge(mprotestoldagg,  mproretestoldagg, by = c("sbj_id"))
+
 eiccprotrtoldagg = icc(type = "agreement", ratings = (eprotrtoldagg[, c(2,3)]))
 eiccprotrtoldagg
 
@@ -68,10 +70,10 @@ eantitrtoldagg <- merge(mantitestoldagg,  mantiretestoldagg, by = c("sbj_id"))
 eiccantitrtoldagg = icc(type = "agreement", ratings = (eantitrtoldagg[, c(2,3)]))
 eiccantitrtoldagg
 
-eprotrtyoungagg <- merge(mprotestyoungagg,  mproretestyoungagg, by = c("sbj_id"))
+eprotrtyoungagg <- merge(mprotestyngagg,  mproretestyngagg, by = c("sbj_id"))
 eiccprotrtyoungagg = icc(type = "agreement", ratings = (eprotrtyoungagg[, c(2,3)]))
 eiccprotrtyoungagg
 
-eantitrtyoungagg <- merge(mantitestyoungagg, mantiretestyoungagg, by = c("sbj_id"))
+eantitrtyoungagg <- merge(mantitestyngagg, mantiretestyngagg, by = c("sbj_id"))
 eiccantitrtyoungagg = icc(type = "agreement", ratings = (eantitrtyoungagg[, c(2,3)]))
 eiccantitrtyoungagg

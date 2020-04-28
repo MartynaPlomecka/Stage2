@@ -1,11 +1,10 @@
 library(dplyr)
 library(irr)
-
 #load data
 table_agg = read.csv("/Users/mplome/dev/STAGE2/Data/full_data_agg.csv")
 head(table_agg)
 oldagg = table_agg[table_agg$age==1,]
-youngagg= table_agg[table_agg$age==0,]
+yngagg= table_agg[table_agg$age==0,]
 
 #old
 protestoldagg = oldagg[oldagg$typ=="p" & oldagg$test_num==1, ]
@@ -15,6 +14,7 @@ antiretestoldagg = oldagg[oldagg$typ=="a" & oldagg$test_num==2, ]
 
 #yng
 protestyngagg = yngagg[yngagg$typ=="p" & yngagg$test_num==1, ]
+
 antitestyngagg = yngagg[yngagg$typ=="a" & yngagg$test_num==1, ]
 proretestyngagg = yngagg[yngagg$typ=="p" & yngagg$test_num==2, ]
 antiretestyngagg = yngagg[yngagg$typ=="a" & yngagg$test_num==2, ]

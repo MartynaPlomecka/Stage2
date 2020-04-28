@@ -166,11 +166,16 @@ c = create_ggplot(proold1t, proold2t, antiold1t, antiold2t,
 ###Error rate
 ##############
 
-final <- read.table("/Users/mplome/dev/STAGE2/Data/full_data_for_2_stage.csv",
+final <- read.table("/Users/mplome/dev/STAGE2/Data/full_data_agg.csv",
                       header = TRUE, sep=",")
 final$error_rate = final$error / (final$error + final$correct)
 head(final)
-icc = final %>% group_by(id,blok, age,typ, test_nr) %>% summarise(avg=mean(error_rate))
+
+# TODO(mplome): Use dplyr to filter subjects without test and retest...
+# ...
+
+
+icc = final %>% group_by(sbj_id,blok, age,typ, test_num) %>% summarise(avg=mean(error_rate))
 
 #colnames(icc) = c("sbj_id", "age", "typ", "test_nr", "avg")
 icc$typ[icc$typ=='0'] = 'a'
@@ -182,15 +187,15 @@ antiold = icc[icc$age==1 & icc$typ=="a", ]
 antiyoung = icc[icc$age==0 & icc$typ=="a", ]
 
 
-proold1 = icc[icc$age ==1 & icc$typ=="p" & icc$test_nr==1, ]
-proyoung1 = icc[icc$age ==0 & icc$typ=="p" & icc$test_nr==1, ]
-antiold1 = icc[icc$age==1 & icc$typ=="a" & icc$test_nr==1, ]
-antiyoung1 = icc[icc$age==0 & icc$typ=="a" & icc$test_nr==1, ]
+proold1 = icc[icc$age ==1 & icc$typ=="p" & icc$test_num==1, ]
+proyoung1 = icc[icc$age ==0 & icc$typ=="p" & icc$test_num==1, ]
+antiold1 = icc[icc$age==1 & icc$typ=="a" & icc$test_num==1, ]
+antiyoung1 = icc[icc$age==0 & icc$typ=="a" & icc$test_num==1, ]
 
-proold2 = icc[icc$age ==1 & icc$typ=="p" & icc$test_nr==2, ]
-proyoung2 = icc[icc$age ==0 & icc$typ=="p"  & icc$test_nr==2, ]
-antiold2 = icc[icc$age==1 & icc$typ=="a" & icc$test_nr==2, ]
-antiyoung2 = icc[icc$age==0 & icc$typ== "a" & icc$test_nr==2, ]
+proold2 = icc[icc$age ==1 & icc$typ=="p" & icc$test_num==2, ]
+proyoung2 = icc[icc$age ==0 & icc$typ=="p"  & icc$test_num==2, ]
+antiold2 = icc[icc$age==1 & icc$typ=="a" & icc$test_num==2, ]
+antiyoung2 = icc[icc$age==0 & icc$typ== "a" & icc$test_num==2, ]
 
 
 proold1t = proold1$avg
