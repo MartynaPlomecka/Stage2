@@ -39,7 +39,7 @@ bad_ids_with_test_only = test$sbj_id[test$how_many == 1]
 View(bad_ids_with_test_only) #N6, Q8
 
 
-reject_ids = c("N6", "Q8") 
+reject_ids = c("N6", "Q8","B3") 
 
 index_good = !(final$sbj_id %in% reject_ids)
 final = final[index_good,]
