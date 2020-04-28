@@ -1,9 +1,5 @@
 
 
-*This is the repository for the registered report "Aging effects and test-retest reliability of inhibitory control for saccadic eye movements". Stage 1 was already accepted in eNeuro: https://osf.io/4fu6r/*
-
-*In case of any comments please contact me: martyna.plomecka@uzh.ch*
-
 ## Aging effects and test-retest reliability of inhibitory control for saccadic eye movements
 
 Healthy aging is associated with a decline of inhibitory control, the ability to prevent the execution of impulsive response behavior. A widely accepted measure of inhibitory control is the antisaccade task.
