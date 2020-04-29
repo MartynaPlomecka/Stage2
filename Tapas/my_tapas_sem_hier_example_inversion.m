@@ -1,5 +1,6 @@
 function [posterior, summary] = my_tapas_sem_hier_example_inversion(model, param, iteration)
-%% Example for inversion with a linear model for the prior. 
+
+%inversion with a linear model for the prior. 
 %
 % Input
 %       model       -- String. Either seria or prosa
@@ -8,11 +9,6 @@ function [posterior, summary] = my_tapas_sem_hier_example_inversion(model, param
 %       posterior   -- Structure. Contains the posterior estimates.
 %       summary     -- Table. Contains a table with a summary of the 
 %                      posterior.
-
-% aponteeduardo@gmail.com
-% copyright (C) 2018
-%
-
 
 n = 0;
 
